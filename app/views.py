@@ -6,6 +6,7 @@ from .serializers import (
     TestSerializer,
     LocationGetAllSerializer,
     LocationCreateUpdateSerializer,
+    GetSingleLocationSerializer,
 )
 
 # Create your views here.
@@ -57,3 +58,14 @@ def delete_location(request, location_id):
 
     location.delete()
     return Response()
+
+
+@api_view(['GET'])
+def get_location_by_id(request, location_id):
+    try:
+        location = Location.objects.get(id=location_id)
+    except Location.DoesNotExist:
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    serializer = GetSingleLocationSerializer(location)
+    return Response(serializer.data)
