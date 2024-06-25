@@ -8,6 +8,22 @@ class TestSerializer(serializers.ModelSerializer):
         fields = ['id', 'name']
 
 
+class GetSingleLocationSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Location
+        fields = [
+            'id',
+            'name',
+            'code',
+            'note',
+            'street',
+            'city',
+            'state',
+            'postcode',
+            'country',
+        ]
+
+
 class LocationGetAllSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
@@ -15,7 +31,6 @@ class LocationGetAllSerializer(serializers.ModelSerializer):
 
 
 class LocationCreateUpdateSerializer(serializers.ModelSerializer):
-
 
     class Meta:
         model = Location
