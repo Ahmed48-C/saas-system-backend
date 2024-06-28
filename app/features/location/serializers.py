@@ -1,6 +1,6 @@
 from django.utils import timezone
 from rest_framework import serializers
-from .models import TestModel, Location
+from app.features.location.models import TestModel, Location
 
 class TestSerializer(serializers.ModelSerializer):
     class Meta:
