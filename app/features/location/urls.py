@@ -1,5 +1,5 @@
 from django.urls import path
-from app.views import (
+from app.features.location.views import (
     records_list,
     get_all_location,
     create_location,

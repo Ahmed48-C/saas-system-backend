@@ -2,7 +2,7 @@ from django.shortcuts import render
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .serializers import (
+from app.features.location.serializers import (
     TestSerializer,
     LocationGetAllSerializer,
     LocationCreateUpdateSerializer,
@@ -11,7 +11,7 @@ from .serializers import (
 
 # Create your views here.
 
-from .models import TestModel, Location
+from app.features.location.models import TestModel, Location
 
 @api_view(['GET'])
 def records_list(request):
