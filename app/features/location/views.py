@@ -23,7 +23,7 @@ def records_list(request):
 
 @api_view(['GET'])
 def get_all_location(request):
-    records = Location.objects.all()
+    records = Location.objects.get_all_by_limit(request) #Location.objects.all()
     serializer = LocationGetAllSerializer(records, many=True)
     return Response(serializer.data)
 
