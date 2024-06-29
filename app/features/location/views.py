@@ -23,9 +23,15 @@ def records_list(request):
 
 @api_view(['GET'])
 def get_all_location(request):
-    records = Location.objects.get_all_by_limit(request) #Location.objects.all()
+    records, actual_total_count = Location.objects.get_all_by_limit(request) #Location.objects.all()
     serializer = LocationGetAllSerializer(records, many=True)
-    return Response(serializer.data)
+
+    json_obj = Location.objects.json_object(
+        actual_total_count = actual_total_count,
+        data = serializer.data
+    )
+
+    return Response(json_obj)
 
 
 @api_view(['POST'])

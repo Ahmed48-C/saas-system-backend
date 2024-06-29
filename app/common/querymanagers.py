@@ -10,6 +10,15 @@ from django.apps import apps
 class CommonQueryManager(models.Manager):
 
     @staticmethod
+    def json_object(actual_total_count, data):
+        obj = {
+            "actual_total_count": actual_total_count,
+            "data": data
+        }
+
+        return obj
+
+    @staticmethod
     def get_filtered_result(request, result):
         result_with_filter = None
 
