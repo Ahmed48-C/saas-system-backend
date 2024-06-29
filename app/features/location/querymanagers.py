@@ -12,8 +12,11 @@ class LocationQueryManager(CommonQueryManager):
     def get_all_by_limit(self, request):
         items = self.filter_by_permission_and_param(request)
 
+        actual_total_count = items.count()
+
         if ('from' in request.query_params and 'to' in request.query_params) and (
                 request.query_params["from"].isnumeric() and request.query_params["to"].isnumeric()):
-            return items[int(request.query_params["from"]):int(request.query_params["to"])]
+                paginated_items = items[int(request.query_params["from"]):int(request.query_params["to"])]
+                return paginated_items, actual_total_count
 
-        return items
+        return items, actual_total_count
