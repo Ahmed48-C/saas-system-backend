@@ -12,8 +12,8 @@ class LocationQueryManager(CommonQueryManager):
     def get_all_by_limit(self, request):
         items = self.filter_by_permission_and_param(request)
 
-        # if ('from' in request.query_params and 'to' in request.query_params) and (
-        #         request.query_params["from"].isnumeric() and request.query_params["to"].isnumeric()):
-        #     return items[int(request.query_params["from"]):int(request.query_params["to"])]
+        if ('from' in request.query_params and 'to' in request.query_params) and (
+                request.query_params["from"].isnumeric() and request.query_params["to"].isnumeric()):
+            return items[int(request.query_params["from"]):int(request.query_params["to"])]
 
         return items
