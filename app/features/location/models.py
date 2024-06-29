@@ -1,5 +1,5 @@
 from django.db import models
-
+from app.features.location.querymanagers import LocationQueryManager
 # Create your models here.
 
 class TestModel(models.Model):
@@ -18,6 +18,8 @@ class Location(models.Model):
     state = models.CharField(max_length=200)
     postcode = models.CharField(max_length=50)
     country = models.CharField(max_length=30)
+
+    objects = LocationQueryManager()
 
     def __str__(self):
         return self.name
