@@ -13,6 +13,9 @@ class CommonQueryManager(models.Manager):
     def get_filtered_result(request, result):
         result_with_filter = None
 
+        # used for table sorting/ordering
+        order_by = []
+
         # parameters should be passed in the following format:
         # eg. : filters=[{"aisle_no":"1","operating_unit_aisle_detail__product__product_tag__id":[16,6,21],"operating_unit_aisle_detail__product__id":2749}]
         for param in request.query_params:
@@ -51,7 +54,19 @@ class CommonQueryManager(models.Manager):
                     logger.error("SERIALIZER SAVE ERROR MESSAGE: %s ", str(te))
                     return result.none()
 
+
+            elif str(param) == "order_by":
+                column = request.query_params[param]
+
+                # collect the sorting/ordering column
+                order_by.append(column)
+
         if result_with_filter is not None:
             result = result_with_filter
 
-        return result
+        try:
+            # apply the sorting/ordering
+            return result.order_by(*order_by)
+        except FieldError as e:
+            logger.error("Error on ordering the result: %s ", str(e))
+            return result
