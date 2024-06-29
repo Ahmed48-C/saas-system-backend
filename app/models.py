@@ -1,2 +1,3 @@
 
 from app.features.location.models import TestModel, Location
+from app.features.userprofile.models import UserProfile
