@@ -1,5 +1,10 @@
 from django.shortcuts import render
-from rest_framework.decorators import api_view
+
+# for JWT token and authentication control
+from rest_framework.decorators import api_view, authentication_classes, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
 from rest_framework.response import Response
 from rest_framework import status
 from app.features.location.serializers import (
@@ -22,6 +27,8 @@ def records_list(request):
 
 
 @api_view(['GET'])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
 def get_all_location(request):
     records, actual_total_count = Location.objects.get_all_by_limit(request) #Location.objects.all()
     serializer = LocationGetAllSerializer(records, many=True)
