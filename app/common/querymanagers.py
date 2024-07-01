@@ -10,6 +10,22 @@ from django.apps import apps
 class CommonQueryManager(models.Manager):
 
     @staticmethod
+    def fetch_rules(userprofile):
+        function_rules = userprofile.permission_role.function_rules.all()
+
+        function_rules_result = []
+        for rule in function_rules:
+            function_result = {
+                "function_key": rule.function_key,
+            }
+
+            function_rules_result.append(function_result)
+
+        return {
+            "function_rules": function_rules_result
+        }
+
+    @staticmethod
     def json_object(actual_total_count, data):
         obj = {
             "actual_total_count": actual_total_count,

@@ -15,9 +15,11 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-)
+# from rest_framework_simplejwt.views import (
+#     TokenObtainPairView,
+# )
+from app.features.userprofile.token_helper import CustomTokenObtainPairView
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -27,5 +29,6 @@ urlpatterns = [
     path('api/', include('app.features.supplier.urls')),
 
     # Token api using 'POST' request
-    path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
 ]
