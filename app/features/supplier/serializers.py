@@ -12,6 +12,8 @@ class GetSingleSupplierSerializer(serializers.ModelSerializer):
             'name',
             'phone',
             'email',
+            'contact_name',
+            'contact_phone',
             'operator_id',
             'location_id',
         ]
@@ -28,6 +30,8 @@ class SupplierGetAllSerializer(serializers.ModelSerializer):
             'name',
             'phone',
             'email',
+            'contact_name',
+            'contact_phone',
             'operator',
             'location',
         ]
@@ -42,7 +46,7 @@ class SupplierGetAllSerializer(serializers.ModelSerializer):
 
 
 class SupplierCreateUpdateSerializer(serializers.ModelSerializer):
-    operator_id = serializers.CharField(max_length=10)
+    # operator_id = serializers.CharField(max_length=10)
     location_id = serializers.CharField(max_length=10)
 
     class Meta:
@@ -51,6 +55,8 @@ class SupplierCreateUpdateSerializer(serializers.ModelSerializer):
             'name',
             'phone',
             'email',
-            'operator_id',
+            'contact_name',
+            'contact_phone',
+            # 'operator_id',
             'location_id',
         ]

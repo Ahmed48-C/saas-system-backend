@@ -11,6 +11,8 @@ class SupplierAdmin(admin.ModelAdmin):
         'name',
         'phone',
         'email',
+        'contact_name',
+        'contact_phone',
         'operator',
         'location',
     ]
