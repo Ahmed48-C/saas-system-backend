@@ -82,3 +82,20 @@ def get_location_by_id(request, location_id):
 
     serializer = GetSingleLocationSerializer(location)
     return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+def delete_locations(request):
+    # Ensure the request body contains a list of IDs
+    if not isinstance(request.data, list):
+        return Response({"detail": "Invalid data format. Expected a list of IDs."}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Retrieve and delete locations in a batch
+    try:
+        locations = Location.objects.filter(id__in=request.data)
+        if not locations.exists():
+            return Response({"detail": "None of the locations found."}, status=status.HTTP_404_NOT_FOUND)
+        count, _ = locations.delete()
+        return Response({"detail": f"{count} locations deleted successfully."}, status=status.HTTP_200_OK)
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

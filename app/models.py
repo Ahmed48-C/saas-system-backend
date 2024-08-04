@@ -4,3 +4,4 @@ from app.features.location.models import TestModel, Location
 from app.features.userprofile.models import UserProfile
 from app.features.supplier.models import Supplier
 from app.features.permission_role.models import FunctionRule
+from app.features.product.models import Product

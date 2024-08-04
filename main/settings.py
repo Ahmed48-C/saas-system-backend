@@ -86,7 +86,7 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'saas_system',
-        'USER': 'srp_business_service',
+        'USER': 'saas_admin',
         'PASSWORD': '1234',
         'HOST': 'localhost',
         'PORT': '5432',

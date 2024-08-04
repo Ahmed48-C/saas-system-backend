@@ -6,6 +6,7 @@ from app.features.location.views import (
     update_location,
     delete_location,
     get_location_by_id,
+    delete_locations,
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
     path('post/location/', create_location),
     path('put/location/<location_id>/', update_location),
     path('delete/location/<location_id>/', delete_location),
+    path('delete/locations/', delete_locations),
 ]
