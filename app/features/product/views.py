@@ -7,25 +7,25 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from rest_framework.response import Response
 from rest_framework import status
-from app.features.supplier.serializers import (
-    SupplierGetAllSerializer,
-    SupplierCreateUpdateSerializer,
-    GetSingleSupplierSerializer,
+from app.features.product.serializers import (
+    ProductGetAllSerializer,
+    ProductCreateUpdateSerializer,
+    GetSingleProductSerializer,
 )
 
 # Create your views here.
 
-from app.features.supplier.models import Supplier
+from app.features.product.models import Product
 
 
 @api_view(['GET'])
 # @authentication_classes([JWTAuthentication])
 # @permission_classes([IsAuthenticated])
-def get_all_supplier(request):
-    records, actual_total_count = Supplier.objects.get_all_by_limit(request)
-    serializer = SupplierGetAllSerializer(records, many=True)
+def get_all_product(request):
+    records, actual_total_count = Product.objects.get_all_by_limit(request)
+    serializer = ProductGetAllSerializer(records, many=True)
 
-    json_obj = Supplier.objects.json_object(
+    json_obj = Product.objects.json_object(
         actual_total_count = actual_total_count,
         data = serializer.data
     )
@@ -34,60 +34,60 @@ def get_all_supplier(request):
 
 
 @api_view(['POST'])
-def create_supplier(request):
-    serializer = SupplierCreateUpdateSerializer(data=request.data)
+def create_product(request):
+    serializer = ProductCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data)
 
 
 @api_view(['PUT'])
-def update_supplier(request, supplier_id):
+def update_product(request, product_id):
     try:
-        supplier = Supplier.objects.get(id=supplier_id)
-    except Supplier.DoesNotExist:
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
         return Response({"detail": "Not Found."}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = SupplierCreateUpdateSerializer(supplier, data=request.data)
+    serializer = ProductCreateUpdateSerializer(product, data=request.data)
     serializer.is_valid(raise_exception=True)  # Raise exception on validation failure
     serializer.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['DELETE'])
-def delete_supplier(request, supplier_id):
+def delete_product(request, product_id):
     try:
-        supplier = Supplier.objects.get(id=supplier_id)
-    except Supplier.DoesNotExist:
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    supplier.delete()
+    product.delete()
     return Response()
 
 
 @api_view(['GET'])
-def get_supplier_by_id(request, supplier_id):
+def get_product_by_id(request, product_id):
     try:
-        supplier = Supplier.objects.get(id=supplier_id)
-    except Supplier.DoesNotExist:
+        product = Product.objects.get(id=product_id)
+    except Product.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = GetSingleSupplierSerializer(supplier)
+    serializer = GetSingleProductSerializer(product)
     return Response(serializer.data)
 
 
 @api_view(['DELETE'])
-def delete_suppliers(request):
+def delete_products(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):
         return Response({"detail": "Invalid data format. Expected a list of IDs."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Retrieve and delete suppliers in a batch
+    # Retrieve and delete products in a batch
     try:
-        suppliers = Supplier.objects.filter(id__in=request.data)
-        if not suppliers.exists():
-            return Response({"detail": "None of the suppliers found."}, status=status.HTTP_404_NOT_FOUND)
-        count, _ = suppliers.delete()
-        return Response({"detail": f"{count} suppliers deleted successfully."}, status=status.HTTP_200_OK)
+        products = Product.objects.filter(id__in=request.data)
+        if not products.exists():
+            return Response({"detail": "None of the products found."}, status=status.HTTP_404_NOT_FOUND)
+        count, _ = products.delete()
+        return Response({"detail": f"{count} products deleted successfully."}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
