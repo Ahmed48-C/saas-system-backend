@@ -27,7 +27,17 @@ class GetSingleLocationSerializer(serializers.ModelSerializer):
 class LocationGetAllSerializer(serializers.ModelSerializer):
     class Meta:
         model = Location
-        fields = ['id', 'name', 'code']
+        fields = [
+            'id',
+            'name',
+            'code',
+            'note',
+            'street',
+            'city',
+            'state',
+            'postcode',
+            'country',
+        ]
 
 
 class LocationCreateUpdateSerializer(serializers.ModelSerializer):

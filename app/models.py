@@ -7,3 +7,6 @@ from app.features.permission_role.models import FunctionRule
 from app.features.product.models import Product
 from app.features.store.models import Store
 from app.features.inventory.models import Inventory
+from app.features.reminder.models import Reminder
+from app.features.customer.models import Customer
+from app.features.purchase_order.models import PurchaseOrder

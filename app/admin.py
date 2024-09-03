@@ -7,3 +7,6 @@ from app.features.permission_role.admin import PermissionRoleAdmin, FunctionRule
 from app.features.product.admin import ProductAdmin
 from app.features.store.admin import StoreAdmin
 from app.features.inventory.admin import InventoryAdmin
+from app.features.reminder.admin import ReminderAdmin
+from app.features.customer.admin import CustomerAdmin
+from app.features.purchase_order.admin import PurchaseOrderAdmin

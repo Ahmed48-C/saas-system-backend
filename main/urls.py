@@ -30,6 +30,9 @@ urlpatterns = [
     path('api/', include('app.features.product.urls')),
     path('api/', include('app.features.store.urls')),
     path('api/', include('app.features.inventory.urls')),
+    path('api/', include('app.features.reminder.urls')),
+    path('api/', include('app.features.customer.urls')),
+    path('api/', include('app.features.purchase_order.urls')),
 
     # Token api using 'POST' request
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

@@ -20,4 +20,10 @@ class Inventory(models.Model):
     objects = InventoryQueryManager()
 
     def __str__(self):
-        return self.name
+        return self.code
+
+    class Meta:
+        unique_together = ('product', 'store')
+        constraints = [
+            models.UniqueConstraint(fields=['product', 'store'], name='unique_product_store')
+        ]

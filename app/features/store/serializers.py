@@ -21,7 +21,17 @@ class GetSingleStoreSerializer(serializers.ModelSerializer):
 class StoreGetAllSerializer(serializers.ModelSerializer):
     class Meta:
         model = Store
-        fields = ['id', 'name', 'code']
+        fields = [
+            'id',
+            'name',
+            'code',
+            'note',
+            'street',
+            'city',
+            'state',
+            'postcode',
+            'country',
+        ]
 
 
 class StoreCreateUpdateSerializer(serializers.ModelSerializer):
