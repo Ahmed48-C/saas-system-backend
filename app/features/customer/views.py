@@ -10,25 +10,25 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 from rest_framework.response import Response
 from rest_framework import status
-from app.features.product.serializers import (
-    ProductGetAllSerializer,
-    ProductCreateUpdateSerializer,
-    GetSingleProductSerializer,
+from app.features.customer.serializers import (
+    CustomerGetAllSerializer,
+    CustomerCreateUpdateSerializer,
+    GetSingleCustomerSerializer,
 )
 
 # Create your views here.
 
-from app.features.product.models import Product
+from app.features.customer.models import Customer
 
 
 @api_view(['GET'])
 # @authentication_classes([JWTAuthentication])
 # @permission_classes([IsAuthenticated])
-def get_all_product(request):
-    records, actual_total_count = Product.objects.get_all_by_limit(request)
-    serializer = ProductGetAllSerializer(records, many=True)
+def get_all_customer(request):
+    records, actual_total_count = Customer.objects.get_all_by_limit(request)
+    serializer = CustomerGetAllSerializer(records, many=True)
 
-    json_obj = Product.objects.json_object(
+    json_obj = Customer.objects.json_object(
         actual_total_count = actual_total_count,
         data = serializer.data
     )
@@ -37,32 +37,32 @@ def get_all_product(request):
 
 
 @api_view(['POST'])
-def create_product(request):
-    serializer = ProductCreateUpdateSerializer(data=request.data)
+def create_customer(request):
+    serializer = CustomerCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data)
 
 
 @api_view(['PUT'])
-def update_product(request, product_id):
+def update_customer(request, customer_id):
     try:
-        product = Product.objects.get(id=product_id)
-    except Product.DoesNotExist:
+        customer = Customer.objects.get(id=customer_id)
+    except Customer.DoesNotExist:
         return Response({"detail": "Not Found."}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = ProductCreateUpdateSerializer(product, data=request.data)
+    serializer = CustomerCreateUpdateSerializer(customer, data=request.data)
     serializer.is_valid(raise_exception=True)  # Raise exception on validation failure
     serializer.save()
     return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 @api_view(['DELETE'])
-def delete_product(request, product_id):
+def delete_customer(request, customer_id):
     try:
-        product = Product.objects.get(id=product_id)
-        product.delete()
-    except Product.DoesNotExist:
+        customer = Customer.objects.get(id=customer_id)
+        customer.delete()
+    except Customer.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
     except ProtectedError as e:
         # Extract the related instances causing the ProtectedError
@@ -85,36 +85,54 @@ def delete_product(request, product_id):
             modified_message = original_message
 
         return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
+    # except ProtectedError as e:
+    #     # Return a more detailed error message
+    #     return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response()
 
 
 @api_view(['GET'])
-def get_product_by_id(request, product_id):
+def get_customer_by_id(request, customer_id):
     try:
-        product = Product.objects.get(id=product_id)
-    except Product.DoesNotExist:
+        customer = Customer.objects.get(id=customer_id)
+    except Customer.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    serializer = GetSingleProductSerializer(product)
+    serializer = GetSingleCustomerSerializer(customer)
     return Response(serializer.data)
 
 
+# @api_view(['DELETE'])
+# def delete_customers(request):
+#     # Ensure the request body contains a list of IDs
+#     if not isinstance(request.data, list):
+#         return Response({"detail": "Invalid data format. Expected a list of IDs."}, status=status.HTTP_400_BAD_REQUEST)
+
+#     # Retrieve and delete customers in a batch
+#     try:
+#         customers = Customer.objects.filter(id__in=request.data)
+#         if not customers.exists():
+#             return Response({"detail": "None of the customers found."}, status=status.HTTP_404_NOT_FOUND)
+#         count, _ = customers.delete()
+#         return Response({"detail": f"{count} customers deleted successfully."}, status=status.HTTP_200_OK)
+#     except Exception as e:
+#         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 @api_view(['DELETE'])
-def delete_products(request):
+def delete_customers(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):
         return Response({"detail": "Invalid data format. Expected a list of IDs."}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        products = Product.objects.filter(id__in=request.data)
-        if not products.exists():
-            return Response({"detail": "None of the products found."}, status=status.HTTP_404_NOT_FOUND)
+        customers = Customer.objects.filter(id__in=request.data)
+        if not customers.exists():
+            return Response({"detail": "None of the customers found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Attempt to delete the products
+        # Attempt to delete the customers
         try:
-            count, _ = products.delete()
-            return Response({"detail": f"{count} products deleted successfully."}, status=status.HTTP_200_OK)
+            count, _ = customers.delete()
+            return Response({"detail": f"{count} customers deleted successfully."}, status=status.HTTP_200_OK)
         except ProtectedError as e:
             # Extract the related instances causing the ProtectedError
             related_objects = e.protected_objects

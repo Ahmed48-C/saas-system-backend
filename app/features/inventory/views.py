@@ -1,4 +1,8 @@
 from django.shortcuts import render
+from django.db.models.deletion import ProtectedError
+from django.http import JsonResponse
+from rest_framework import status
+from rest_framework.exceptions import ValidationError
 
 # for JWT token and authentication control
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -36,9 +40,15 @@ def get_all_inventory(request):
 @api_view(['POST'])
 def create_inventory(request):
     serializer = InventoryCreateUpdateSerializer(data=request.data)
-    serializer.is_valid(raise_exception=True)
-    serializer.save()
-    return Response(serializer.data)
+
+    try:
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    except ValidationError as e:
+        return Response({"detail": e.detail}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 @api_view(['PUT'])
@@ -58,10 +68,34 @@ def update_inventory(request, inventory_id):
 def delete_inventory(request, inventory_id):
     try:
         inventory = Inventory.objects.get(id=inventory_id)
+        inventory.delete()
     except Inventory.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    except ProtectedError as e:
+        # Extract the related instances causing the ProtectedError
+        related_objects = e.protected_objects
 
-    inventory.delete()
+        # Extracting the IDs of related objects
+        related_ids = [obj.id for obj in related_objects]
+
+        # Get the original error message
+        original_message = str(e)
+
+        # Find the part of the message containing the related objects (e.g., "<Inventory: hj6h5n>")
+        start_idx = original_message.find("{")
+        end_idx = original_message.find("}") + 1
+
+        # Replace that part with the related IDs
+        if start_idx != -1 and end_idx != -1:
+            modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
+        else:
+            modified_message = original_message
+
+        return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
+    # except ProtectedError as e:
+    #     # Return a more detailed error message
+    #     return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
     return Response()
 
 
@@ -82,12 +116,36 @@ def delete_inventories(request):
     if not isinstance(request.data, list):
         return Response({"detail": "Invalid data format. Expected a list of IDs."}, status=status.HTTP_400_BAD_REQUEST)
 
-    # Retrieve and delete inventories in a batch
     try:
         inventories = Inventory.objects.filter(id__in=request.data)
         if not inventories.exists():
             return Response({"detail": "None of the inventories found."}, status=status.HTTP_404_NOT_FOUND)
-        count, _ = inventories.delete()
-        return Response({"detail": f"{count} inventories deleted successfully."}, status=status.HTTP_200_OK)
+
+        # Attempt to delete the inventories
+        try:
+            count, _ = inventories.delete()
+            return Response({"detail": f"{count} inventories deleted successfully."}, status=status.HTTP_200_OK)
+        except ProtectedError as e:
+            # Extract the related instances causing the ProtectedError
+            related_objects = e.protected_objects
+
+            # Extracting the IDs of related objects
+            related_ids = [obj.id for obj in related_objects]
+
+            # Get the original error message
+            original_message = str(e)
+
+            # Find the part of the message containing the related objects (e.g., "<Product: hj6h5n>")
+            start_idx = original_message.find("{")
+            end_idx = original_message.find("}") + 1
+
+            # Replace that part with the related IDs
+            if start_idx != -1 and end_idx != -1:
+                modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
+            else:
+                modified_message = original_message
+
+            return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
