@@ -33,6 +33,8 @@ urlpatterns = [
     path('api/', include('app.features.reminder.urls')),
     path('api/', include('app.features.customer.urls')),
     path('api/', include('app.features.purchase_order.urls')),
+    path('api/', include('app.features.balance.urls')),
+    path('api/', include('app.features.balance_log.urls')),
 
     # Token api using 'POST' request
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),

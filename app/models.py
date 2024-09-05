@@ -10,3 +10,5 @@ from app.features.inventory.models import Inventory
 from app.features.reminder.models import Reminder
 from app.features.customer.models import Customer
 from app.features.purchase_order.models import PurchaseOrder
+from app.features.balance.models import Balance
+from app.features.balance_log.models import BalanceLog

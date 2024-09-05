@@ -10,3 +10,5 @@ from app.features.inventory.admin import InventoryAdmin
 from app.features.reminder.admin import ReminderAdmin
 from app.features.customer.admin import CustomerAdmin
 from app.features.purchase_order.admin import PurchaseOrderAdmin
+from app.features.balance.admin import BalanceAdmin
+from app.features.balance_log.admin import BalanceLogAdmin
