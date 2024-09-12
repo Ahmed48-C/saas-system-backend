@@ -3,6 +3,7 @@ from app.features.purchase_order.querymanagers import PurchaseOrderQueryManager
 from app.features.operator.models import Operator
 from app.features.store.models import Store
 from app.features.product.models import Product
+from app.features.balance.models import Balance
 # Create your models here.
 
 class PurchaseOrder(models.Model):
@@ -15,6 +16,7 @@ class PurchaseOrder(models.Model):
     operator = models.ForeignKey(Operator, on_delete=models.PROTECT, null=True, blank=True)
     store = models.ForeignKey(Store, on_delete=models.PROTECT, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.PROTECT, null=True, blank=True)
+    balance = models.ForeignKey(Balance, on_delete=models.PROTECT, null=True, blank=True)
 
     objects = PurchaseOrderQueryManager()
 

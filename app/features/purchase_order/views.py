@@ -19,6 +19,7 @@ from app.features.purchase_order.serializers import (
 
 from app.features.purchase_order.models import PurchaseOrder
 from app.features.inventory.models import Inventory
+from app.features.balance.models import Balance
 
 
 @api_view(['GET'])
@@ -94,6 +95,65 @@ def get_all_purchase_order(request):
 #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+# @api_view(['POST'])
+# def create_purchase_order(request):
+#     serializer = PurchaseOrderCreateUpdateSerializer(data=request.data)
+#     serializer.is_valid(raise_exception=True)
+#     validated_data = serializer.validated_data
+
+#     status_order = validated_data.get('status')
+#     quantity = validated_data.get('quantity')
+#     store_id = validated_data.get('store_id')
+#     product_id = validated_data.get('product_id')
+#     balance_id = validated_data.get('balance_id')
+
+#     if status_order == 'Completed':
+#         try:
+#             inventory = Inventory.objects.get(
+#                 product=product_id,
+#                 store=store_id
+#             )
+
+#             # Convert inventory.in_stock to integer if it's a string
+#             inventory_in_stock = int(inventory.in_stock) if inventory.in_stock and inventory.in_stock.isdigit() else 0
+#             new_in_stock = inventory_in_stock + quantity
+
+#             # Debugging outputs
+#             print(f"Inventory In Stock: {inventory_in_stock}")
+#             print(f"New In Stock: {new_in_stock}")
+
+#             # Check if new_in_stock exceeds max_stock, if max_stock is set
+#             if inventory.max_stock and inventory.max_stock.isdigit():
+#                 max_stock = int(inventory.max_stock)
+#                 print(f"Max Stock: {max_stock}")
+#                 if new_in_stock > max_stock:
+#                     return Response({
+#                         "detail": f"Cannot add {quantity} to inventory. Maximum stock level of {max_stock} would be exceeded."
+#                     }, status=status.HTTP_400_BAD_REQUEST)
+
+#             # Save new_in_stock back as string
+#             inventory.in_stock = str(new_in_stock)
+#             inventory.save()
+
+#         except Inventory.DoesNotExist:
+#             try:
+#                 Inventory.objects.create(
+#                     in_stock=str(quantity),  # Save as string
+#                     product_id=product_id,
+#                     store_id=store_id,
+#                     code=validated_data.get('name')
+#                 )
+#             except Exception as e:
+#                 # If creation fails, return a meaningful error message
+#                 return Response({
+#                     "detail": f"Failed to create inventory: {str(e)}"
+#                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+#     # Save the purchase order only after the inventory check
+#     purchase_order = serializer.save()
+
+#     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 @api_view(['POST'])
 def create_purchase_order(request):
     serializer = PurchaseOrderCreateUpdateSerializer(data=request.data)
@@ -104,6 +164,22 @@ def create_purchase_order(request):
     quantity = validated_data.get('quantity')
     store_id = validated_data.get('store_id')
     product_id = validated_data.get('product_id')
+    balance_id = validated_data.get('balance_id')
+    total = validated_data.get('total')  # Assuming total is provided in the request data
+
+    # Fetch the balance associated with the balance_id
+    try:
+        balance = Balance.objects.get(id=balance_id)
+    except Balance.DoesNotExist:
+        return Response({
+            "detail": "Balance not found."
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    # Check if the total minus the balance amount would go negative
+    if balance.amount - total < 0:
+        return Response({
+            "detail": "The total amount exceeds the available balance. Please adjust the order or add funds."
+        }, status=status.HTTP_400_BAD_REQUEST)
 
     if status_order == 'Completed':
         try:
@@ -147,10 +223,14 @@ def create_purchase_order(request):
                     "detail": f"Failed to create inventory: {str(e)}"
                 }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    # Save the purchase order only after the inventory check
+    # If the balance is sufficient, subtract the total from the balance amount
+    balance.amount -= total
+    balance.save()
+    # Save the purchase order only after the inventory and balance checks
     purchase_order = serializer.save()
 
     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
 
 
 # @api_view(['PUT'])
@@ -229,6 +309,51 @@ def create_purchase_order(request):
 
 from django.db import transaction
 
+# @api_view(['PUT'])
+# def update_purchase_order(request, purchase_order_id):
+#     try:
+#         purchase_order = PurchaseOrder.objects.get(id=purchase_order_id)
+#     except PurchaseOrder.DoesNotExist:
+#         return Response({"detail": "Not Found."}, status=status.HTTP_404_NOT_FOUND)
+
+#     original_status = purchase_order.status
+#     original_quantity = purchase_order.quantity
+#     original_product = purchase_order.product
+#     original_store = purchase_order.store
+
+#     serializer = PurchaseOrderCreateUpdateSerializer(purchase_order, data=request.data)
+#     serializer.is_valid(raise_exception=True)
+
+#     validated_data = serializer.validated_data
+#     updated_product_id = validated_data.get('product_id')
+#     updated_store_id = validated_data.get('store_id')
+#     updated_status = validated_data.get('status')
+#     updated_quantity = validated_data.get('quantity')
+
+#     try:
+#         with transaction.atomic():
+#             if original_status == 'Pending' and updated_status == 'Completed':
+#                 _update_inventory_on_completion(validated_data)
+
+#             elif original_status == 'Completed' and updated_status == 'Pending':
+#                 _revert_inventory_on_pending(original_product, original_store, original_quantity)
+
+#             elif original_status == 'Completed' and updated_status == 'Completed':
+#                 if original_product.id != updated_product_id or original_store.id != updated_store_id:
+#                     _revert_inventory_on_pending(original_product, original_store, original_quantity)
+#                     _update_inventory_on_completion(validated_data)
+#                 elif original_quantity != updated_quantity:
+#                     _adjust_inventory_quantity(validated_data, original_quantity)
+
+#             # Save the updated purchase order after successful inventory operations
+#             updated_purchase_order = serializer.save()
+
+#     except ValueError as e:
+#         return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+#     return Response(serializer.data, status=status.HTTP_200_OK)
+
+
 @api_view(['PUT'])
 def update_purchase_order(request, purchase_order_id):
     try:
@@ -240,6 +365,7 @@ def update_purchase_order(request, purchase_order_id):
     original_quantity = purchase_order.quantity
     original_product = purchase_order.product
     original_store = purchase_order.store
+    original_total = purchase_order.total  # Assuming there's a total field in the purchase order
 
     serializer = PurchaseOrderCreateUpdateSerializer(purchase_order, data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -249,9 +375,14 @@ def update_purchase_order(request, purchase_order_id):
     updated_store_id = validated_data.get('store_id')
     updated_status = validated_data.get('status')
     updated_quantity = validated_data.get('quantity')
+    updated_total = validated_data.get('total')  # Assuming you're updating total
+
+    balance_id = validated_data.get('balance_id')  # Assuming you pass balance ID
+    balance = Balance.objects.get(id=balance_id)  # Fetch balance object
 
     try:
         with transaction.atomic():
+            # Handle inventory update based on status changes
             if original_status == 'Pending' and updated_status == 'Completed':
                 _update_inventory_on_completion(validated_data)
 
@@ -265,14 +396,26 @@ def update_purchase_order(request, purchase_order_id):
                 elif original_quantity != updated_quantity:
                     _adjust_inventory_quantity(validated_data, original_quantity)
 
-            # Save the updated purchase order after successful inventory operations
+            # Handle balance check
+            balance_adjustment = updated_total - original_total  # Difference in total amount
+
+            # If the new balance would go negative, raise an error
+            if balance.amount - balance_adjustment < 0:
+                return Response({
+                    "detail": "Insufficient balance to complete the purchase order."
+                }, status=status.HTTP_400_BAD_REQUEST)
+
+            # If balance is sufficient, update balance amount
+            balance.amount -= balance_adjustment
+            balance.save()
+
+            # Save the updated purchase order after successful inventory and balance operations
             updated_purchase_order = serializer.save()
 
     except ValueError as e:
         return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response(serializer.data, status=status.HTTP_200_OK)
-
 
 
 def _update_inventory_on_completion(validated_data):
