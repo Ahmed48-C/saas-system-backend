@@ -17,6 +17,7 @@ class GetSinglePurchaseOrderSerializer(serializers.ModelSerializer):
             'operator_id',
             'store_id',
             'product_id',
+            'balance_id',
         ]
 
 
@@ -24,6 +25,7 @@ class PurchaseOrderGetAllSerializer(serializers.ModelSerializer):
     operator = serializers.SerializerMethodField('get_operator_name')
     store = serializers.SerializerMethodField('get_store_name')
     product = serializers.SerializerMethodField('get_product_name')
+    balance = serializers.SerializerMethodField('get_balance_name')
 
     class Meta:
         model = PurchaseOrder
@@ -37,6 +39,7 @@ class PurchaseOrderGetAllSerializer(serializers.ModelSerializer):
             'operator',
             'store',
             'product',
+            'balance',
         ]
 
     @staticmethod
@@ -51,11 +54,16 @@ class PurchaseOrderGetAllSerializer(serializers.ModelSerializer):
     def get_product_name(obj):
         return obj.product and obj.product.name
 
+    @staticmethod
+    def get_balance_name(obj):
+        return obj.balance and obj.balance.name
+
 
 class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
     # operator_id = serializers.CharField(max_length=10)
     store_id = serializers.CharField(max_length=10)
     product_id = serializers.CharField(max_length=10)
+    balance_id = serializers.CharField(max_length=10)
 
     class Meta:
         model = PurchaseOrder
@@ -68,4 +76,5 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
             # 'operator_id',
             'store_id',
             'product_id',
+            'balance_id',
         ]
