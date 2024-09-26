@@ -27,4 +27,5 @@ class PurchaseOrderAdmin(admin.ModelAdmin):
         'operator',
         'store',
         'balance',
+        'customer',
     ]

@@ -67,6 +67,7 @@ class GetSinglePurchaseOrderSerializer(serializers.ModelSerializer):
             'operator_id',
             'store_id',
             'balance_id',
+            'customer_id',
             'items',  # Add the nested items field here
         ]
 
@@ -112,6 +113,7 @@ class PurchaseOrderGetAllSerializer(serializers.ModelSerializer):
     operator = serializers.SerializerMethodField('get_operator_name')
     store = serializers.SerializerMethodField('get_store_name')
     balance = serializers.SerializerMethodField('get_balance_name')
+    customer = serializers.SerializerMethodField('get_customer_name')
     items = PurchaseItemSerializer(many=True)  # Include the nested items serializer
 
     class Meta:
@@ -124,6 +126,7 @@ class PurchaseOrderGetAllSerializer(serializers.ModelSerializer):
             'operator',
             'store',
             'balance',
+            'customer',
             'items',    # Add the nested items field
         ]
 
@@ -138,6 +141,10 @@ class PurchaseOrderGetAllSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_balance_name(obj):
         return obj.balance and obj.balance.name
+
+    @staticmethod
+    def get_customer_name(obj):
+        return obj.customer and obj.customer.name
 
 # class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
 #     # operator_id = serializers.CharField(max_length=10)
@@ -170,6 +177,7 @@ class PurchaseItemCreateUpdateSerializer(serializers.ModelSerializer):
 class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
     store_id = serializers.CharField(max_length=10)
     balance_id = serializers.CharField(max_length=10)
+    customer_id = serializers.CharField(max_length=10)
     items = PurchaseItemCreateUpdateSerializer(many=True)
 
     class Meta:
@@ -180,6 +188,7 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
             'status',
             'store_id',
             'balance_id',
+            'customer_id',
             'items'
         ]
 
@@ -190,6 +199,7 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         total = validated_data.get('total')
         store_id = validated_data.get('store_id')
         balance_id = validated_data.get('balance_id')
+        customer_id = validated_data.get('customer_id')
 
         # Fetch the balance associated with the balance_id
         try:
@@ -256,7 +266,8 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
             total=total,
             status=status_order,
             store_id=store_id,
-            balance_id=balance_id
+            balance_id=balance_id,
+            customer_id=customer_id
         )
 
         # Create the PurchaseItem(s) for this PurchaseOrder
@@ -352,6 +363,7 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         updated_total = validated_data.get('total')
         updated_store_id = validated_data.get('store_id')
         balance_id = validated_data.get('balance_id')
+        customer_id = validated_data.get('customer_id')
 
         original_status = instance.status
         original_total = instance.total
@@ -404,6 +416,7 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         instance.status = updated_status
         instance.store_id = updated_store_id
         instance.balance_id = balance_id
+        instance.customer_id = customer_id
         instance.save()
 
         # Update the PurchaseItem(s) related to this PurchaseOrder

@@ -12,3 +12,4 @@ from app.features.customer.admin import CustomerAdmin
 from app.features.purchase_order.admin import PurchaseOrderAdmin
 from app.features.balance.admin import BalanceAdmin
 from app.features.balance_log.admin import BalanceLogAdmin
+from app.features.transfer.admin import TransferAdmin
