@@ -463,7 +463,11 @@ def delete_purchase_order_stock(request, purchase_order_id):
 @api_view(['GET'])
 def get_purchase_order_by_id(request, purchase_order_id):
     try:
-        purchase_order = PurchaseOrder.objects.get(id=purchase_order_id)
+        if purchase_order_id == "last":
+            # Retrieve the last purchase order by creation date or ID
+            purchase_order = PurchaseOrder.objects.latest('id')  # Or use .last() if ordering is different
+        else:
+            purchase_order = PurchaseOrder.objects.get(id=purchase_order_id)
     except PurchaseOrder.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
