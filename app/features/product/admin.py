@@ -11,7 +11,7 @@ class ProductAdmin(admin.ModelAdmin):
         'code',
         'name',
         'description',
-        'supplier',
+        # 'supplier',
         'brand',
         'measure_unit',
         'weight',

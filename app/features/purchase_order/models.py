@@ -4,7 +4,7 @@ from app.features.operator.models import Operator
 from app.features.store.models import Store
 from app.features.product.models import Product
 from app.features.balance.models import Balance
-from app.features.customer.models import Customer
+from app.features.supplier.models import Supplier
 # Create your models here.
 
 class PurchaseOrder(models.Model):
@@ -15,7 +15,7 @@ class PurchaseOrder(models.Model):
     operator = models.ForeignKey(Operator, on_delete=models.PROTECT, null=True, blank=True)
     store = models.ForeignKey(Store, on_delete=models.PROTECT, null=True, blank=True)
     balance = models.ForeignKey(Balance, on_delete=models.PROTECT, null=True, blank=True)
-    customer = models.ForeignKey(Customer, on_delete=models.PROTECT, null=True, blank=True)
+    supplier = models.ForeignKey(Supplier, on_delete=models.PROTECT, null=True, blank=True)
 
     objects = PurchaseOrderQueryManager()
 

@@ -12,7 +12,7 @@ class GetSingleProductSerializer(serializers.ModelSerializer):
             'code',
             'name',
             'description',
-            'supplier_id',
+            # 'supplier_id',
             'brand',
             'measure_unit',
             'weight',
@@ -27,7 +27,7 @@ class GetSingleProductSerializer(serializers.ModelSerializer):
 
 
 class ProductGetAllSerializer(serializers.ModelSerializer):
-    supplier = serializers.SerializerMethodField('get_supplier_name')
+    # supplier = serializers.SerializerMethodField('get_supplier_name')
 
     class Meta:
         model = Product
@@ -36,7 +36,7 @@ class ProductGetAllSerializer(serializers.ModelSerializer):
             'code',
             'name',
             'description',
-            'supplier',
+            # 'supplier',
             'brand',
             'measure_unit',
             'weight',
@@ -49,13 +49,13 @@ class ProductGetAllSerializer(serializers.ModelSerializer):
             'weight_unit',
         ]
 
-    @staticmethod
-    def get_supplier_name(obj):
-        return obj.supplier and obj.supplier.name
+    # @staticmethod
+    # def get_supplier_name(obj):
+        # return obj.supplier and obj.supplier.name
 
 
 class ProductCreateUpdateSerializer(serializers.ModelSerializer):
-    supplier_id = serializers.CharField(max_length=10)
+    # supplier_id = serializers.CharField(max_length=10)
 
     class Meta:
         model = Product
@@ -63,7 +63,7 @@ class ProductCreateUpdateSerializer(serializers.ModelSerializer):
             'code',
             'name',
             'description',
-            'supplier_id',
+            # 'supplier_id',
             'brand',
             'measure_unit',
             'weight',

@@ -1,6 +1,6 @@
 from django.db import models
 from app.features.product.querymanagers import ProductQueryManager
-from app.features.supplier.models import Supplier
+# from app.features.supplier.models import Supplier
 # Create your models here.
 
 class Product(models.Model):
@@ -8,7 +8,6 @@ class Product(models.Model):
     name = models.CharField(max_length=80)
     description = models.TextField(blank=True, null=True)
 
-    supplier = models.ForeignKey(Supplier, on_delete=models.PROTECT, null=True, blank=True)
     brand = models.CharField(max_length=180, null=True, blank=True)
 
     measure_unit = models.CharField(max_length=80, blank=True, null=True)
