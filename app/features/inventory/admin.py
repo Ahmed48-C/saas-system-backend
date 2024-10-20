@@ -8,7 +8,6 @@ from app.features.inventory.models import Inventory
 class InventoryAdmin(admin.ModelAdmin):
 
     list_display = [
-        'code',
         'in_stock',
         'on_order',
         'reserved',

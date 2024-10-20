@@ -9,7 +9,6 @@ class GetSingleInventorySerializer(serializers.ModelSerializer):
         model = Inventory
         fields = [
             'id',
-            'code',
             'in_stock',
             'on_order',
             'reserved',
@@ -32,7 +31,6 @@ class InventoryGetAllSerializer(serializers.ModelSerializer):
         model = Inventory
         fields = [
             'id',
-            'code',
             'in_stock',
             'on_order',
             'reserved',
@@ -70,7 +68,6 @@ class InventoryCreateUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Inventory
         fields = [
-            'code',
             'in_stock',
             'on_order',
             'reserved',
