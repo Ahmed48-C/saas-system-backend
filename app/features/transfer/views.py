@@ -50,6 +50,10 @@ def create_transfer(request):
     balance_to_id = serializer.validated_data.get('balance_to_id')
     amount = serializer.validated_data.get('amount')
 
+    # Add validation to prevent transferring 0$
+    if amount <= 0:
+        return Response({"detail": "Amount must be greater than 0."}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         # Check if balance_from and balance_to are the same
         if balance_from_id == balance_to_id:
