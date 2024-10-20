@@ -7,7 +7,6 @@ from app.features.supplier.models import Supplier
 # Create your models here.
 
 class Inventory(models.Model):
-    code = models.CharField(max_length=50)
     in_stock = models.CharField(max_length=80, blank=True, null=True)
     on_order = models.CharField(max_length=80, blank=True, null=True)
     reserved = models.CharField(max_length=80, blank=True, null=True)
@@ -22,7 +21,7 @@ class Inventory(models.Model):
     objects = InventoryQueryManager()
 
     def __str__(self):
-        return self.code
+        return self.in_stock
 
     class Meta:
         unique_together = ('product', 'store', 'supplier')
