@@ -54,7 +54,7 @@ from django.shortcuts import redirect
 
 # only for production or testing serving react from within django from local
 urlpatterns += [
-    re_path('ui\/.*',TemplateView.as_view(template_name='index.html')),
+    #re_path('ui\/.*',TemplateView.as_view(template_name='index.html')),
 
     path('', TemplateView.as_view(template_name='index.html')),  # Serve React app
 
