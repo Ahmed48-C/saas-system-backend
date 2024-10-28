@@ -1,2 +1,0 @@
-(this["webpackJsonpsaas-system-frontend"]=this["webpackJsonpsaas-system-frontend"]||[]).push([[37],{421:function(e,s,a){"use strict";a.r(s);var t=a(0),n=a.n(t);s.default=()=>n.a.createElement(n.a.Fragment,null,n.a.createElement("h1",null,"This is the Dashboard"))}}]);
-//# sourceMappingURL=37.be4a823d.chunk.js.map
