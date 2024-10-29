@@ -12,6 +12,7 @@ class Store(models.Model):
     state = models.CharField(max_length=200)
     postcode = models.CharField(max_length=50)
     country = models.CharField(max_length=30)
+    total_stock = models.PositiveIntegerField(default=0)  # New field to store total stock
 
     operator = models.ForeignKey(Operator, on_delete=models.PROTECT, null=True, blank=True)
 

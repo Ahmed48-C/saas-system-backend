@@ -15,4 +15,5 @@ class StoreAdmin(admin.ModelAdmin):
         'state',
         'postcode',
         'country',
+        'total_stock'
     ]

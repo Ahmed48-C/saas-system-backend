@@ -7,11 +7,11 @@ from app.features.supplier.models import Supplier
 # Create your models here.
 
 class Inventory(models.Model):
-    in_stock = models.CharField(max_length=80, blank=True, null=True)
-    on_order = models.CharField(max_length=80, blank=True, null=True)
-    reserved = models.CharField(max_length=80, blank=True, null=True)
-    min_stock = models.CharField(max_length=80, blank=True, null=True)
-    max_stock = models.CharField(max_length=80, blank=True, null=True)
+    in_stock = models.IntegerField(max_length=80, blank=True, null=True)
+    on_order = models.IntegerField(max_length=80, blank=True, null=True)
+    reserved = models.IntegerField(max_length=80, blank=True, null=True)
+    min_stock = models.IntegerField(max_length=80, blank=True, null=True)
+    max_stock = models.IntegerField(max_length=80, blank=True, null=True)
 
     operator = models.ForeignKey(Operator, on_delete=models.PROTECT, null=True, blank=True)
     store = models.ForeignKey(Store, on_delete=models.PROTECT, null=True, blank=True)
