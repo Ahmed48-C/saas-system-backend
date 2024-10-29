@@ -15,6 +15,7 @@ class GetSingleStoreSerializer(serializers.ModelSerializer):
             'state',
             'postcode',
             'country',
+            'total_stock'
         ]
 
 
@@ -31,6 +32,7 @@ class StoreGetAllSerializer(serializers.ModelSerializer):
             'state',
             'postcode',
             'country',
+            'total_stock'
         ]
 
 
@@ -47,4 +49,5 @@ class StoreCreateUpdateSerializer(serializers.ModelSerializer):
             'state',
             'postcode',
             'country',
+            'total_stock'
         ]
