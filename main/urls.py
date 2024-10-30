@@ -49,17 +49,17 @@ from django.conf import settings
 
 from django.shortcuts import redirect
 
-# def redirect_to_ui(request):
-#     return redirect('/ui/dashboard')
+def redirect_to_ui(request):
+    return redirect('/ui/dashboard')
 
 # only for production or testing serving react from within django from local
 urlpatterns += [
-    #re_path('ui\/.*',TemplateView.as_view(template_name='index.html')),
+    re_path('ui\/.*',TemplateView.as_view(template_name='index.html')),
 
     path('', TemplateView.as_view(template_name='index.html')),  # Serve React app
 
-    # path('', redirect_to_ui),
-    # path('/', redirect_to_ui),
+    path('', redirect_to_ui),
+    path('/', redirect_to_ui),
 ]
 
 urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
