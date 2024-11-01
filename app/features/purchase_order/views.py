@@ -536,17 +536,17 @@ def delete_purchase_orders(request):
             return Response({"detail": "None of the purchase_orders found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Adjust stock for each purchase order's items
-        for purchase_order in purchase_orders:
-            for item in purchase_order.items.all():
-                try:
-                    inventory = Inventory.objects.get(product=item.product, store=purchase_order.store)
-                    # inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
-                    inventory_in_stock = int(inventory.in_stock or 0)
-                    inventory_in_stock -= item.quantity
-                    inventory.in_stock = str(max(inventory_in_stock, 0))
-                    inventory.save()
-                except Inventory.DoesNotExist:
-                    pass  # Handle missing inventory if necessary
+        # for purchase_order in purchase_orders:
+        #     for item in purchase_order.items.all():
+        #         try:
+        #             inventory = Inventory.objects.get(product=item.product, store=purchase_order.store)
+        #             # inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
+        #             inventory_in_stock = int(inventory.in_stock or 0)
+        #             inventory_in_stock -= item.quantity
+        #             inventory.in_stock = str(max(inventory_in_stock, 0))
+        #             inventory.save()
+        #         except Inventory.DoesNotExist:
+        #             pass  # Handle missing inventory if necessary
 
         # Attempt to delete the purchase_orders
         try:
