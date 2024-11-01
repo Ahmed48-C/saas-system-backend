@@ -21,7 +21,7 @@ class Inventory(models.Model):
     objects = InventoryQueryManager()
 
     def __str__(self):
-        return self.in_stock
+        return str(self.in_stock)
 
     class Meta:
         unique_together = ('product', 'store', 'supplier')
