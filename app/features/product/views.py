@@ -80,27 +80,30 @@ def delete_product(request, product_id):
         product.delete()
     except Product.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    # except ProtectedError as e:
+    #     # Extract the related instances causing the ProtectedError
+    #     related_objects = e.protected_objects
+
+    #     # Extracting the IDs of related objects
+    #     related_ids = [obj.id for obj in related_objects]
+
+    #     # Get the original error message
+    #     original_message = str(e)
+
+    #     # Find the part of the message containing the related objects (e.g., "<Inventory: hj6h5n>")
+    #     start_idx = original_message.find("{")
+    #     end_idx = original_message.find("}") + 1
+
+    #     # Replace that part with the related IDs
+    #     if start_idx != -1 and end_idx != -1:
+    #         modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
+    #     else:
+    #         modified_message = original_message
+
+    #     return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
     except ProtectedError as e:
-        # Extract the related instances causing the ProtectedError
-        related_objects = e.protected_objects
-
-        # Extracting the IDs of related objects
-        related_ids = [obj.id for obj in related_objects]
-
-        # Get the original error message
-        original_message = str(e)
-
-        # Find the part of the message containing the related objects (e.g., "<Inventory: hj6h5n>")
-        start_idx = original_message.find("{")
-        end_idx = original_message.find("}") + 1
-
-        # Replace that part with the related IDs
-        if start_idx != -1 and end_idx != -1:
-            modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
-        else:
-            modified_message = original_message
-
-        return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
+        # Return a more detailed error message
+        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response()
 
@@ -131,26 +134,29 @@ def delete_products(request):
         try:
             count, _ = products.delete()
             return Response({"detail": f"{count} products deleted successfully."}, status=status.HTTP_200_OK)
+        # except ProtectedError as e:
+        #     # Extract the related instances causing the ProtectedError
+        #     related_objects = e.protected_objects
+
+        #     # Extracting the IDs of related objects
+        #     related_ids = [obj.id for obj in related_objects]
+
+        #     # Get the original error message
+        #     original_message = str(e)
+
+        #     # Find the part of the message containing the related objects (e.g., "<Product: hj6h5n>")
+        #     start_idx = original_message.find("{")
+        #     end_idx = original_message.find("}") + 1
+
+        #     # Replace that part with the related IDs
+        #     if start_idx != -1 and end_idx != -1:
+        #         modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
+        #     else:
+        #         modified_message = original_message
+
+        #     return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
         except ProtectedError as e:
-            # Extract the related instances causing the ProtectedError
-            related_objects = e.protected_objects
-
-            # Extracting the IDs of related objects
-            related_ids = [obj.id for obj in related_objects]
-
-            # Get the original error message
-            original_message = str(e)
-
-            # Find the part of the message containing the related objects (e.g., "<Product: hj6h5n>")
-            start_idx = original_message.find("{")
-            end_idx = original_message.find("}") + 1
-
-            # Replace that part with the related IDs
-            if start_idx != -1 and end_idx != -1:
-                modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
-            else:
-                modified_message = original_message
-
-            return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
+            # Return a more detailed error message
+            return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

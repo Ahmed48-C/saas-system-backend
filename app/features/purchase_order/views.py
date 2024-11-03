@@ -338,7 +338,8 @@ def delete_purchase_order(request, purchase_order_id):
         for item in purchase_order.items.all():
             try:
                 inventory = Inventory.objects.get(product=item.product, store=purchase_order.store)
-                inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
+                # inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
+                inventory_in_stock = int(inventory.in_stock or 0)
                 # Adjust inventory stock
                 inventory_in_stock -= item.quantity
                 inventory.in_stock = str(max(inventory_in_stock, 0))
@@ -350,20 +351,23 @@ def delete_purchase_order(request, purchase_order_id):
 
     except PurchaseOrder.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    # except ProtectedError as e:
+    #     # Handle ProtectedError logic (as before)
+    #     related_objects = e.protected_objects
+    #     related_ids = [obj.id for obj in related_objects]
+    #     original_message = str(e)
+    #     start_idx = original_message.find("{")
+    #     end_idx = original_message.find("}") + 1
+
+    #     if start_idx != -1 and end_idx != -1:
+    #         modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
+    #     else:
+    #         modified_message = original_message
+
+    #     return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
     except ProtectedError as e:
-        # Handle ProtectedError logic (as before)
-        related_objects = e.protected_objects
-        related_ids = [obj.id for obj in related_objects]
-        original_message = str(e)
-        start_idx = original_message.find("{")
-        end_idx = original_message.find("}") + 1
-
-        if start_idx != -1 and end_idx != -1:
-            modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
-        else:
-            modified_message = original_message
-
-        return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
+        # Return a more detailed error message
+        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response()
 
@@ -426,7 +430,8 @@ def delete_purchase_order_stock(request, purchase_order_id):
 
             try:
                 inventory = Inventory.objects.get(product=product, store=store)
-                inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
+                # inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
+                inventory_in_stock = int(inventory.in_stock or 0)
 
                 # Subtract the purchase item quantity from the in_stock
                 inventory_in_stock -= quantity
@@ -442,19 +447,22 @@ def delete_purchase_order_stock(request, purchase_order_id):
     except PurchaseOrder.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
 
+    # except ProtectedError as e:
+    #     related_objects = e.protected_objects
+    #     related_ids = [obj.id for obj in related_objects]
+    #     original_message = str(e)
+    #     start_idx = original_message.find("{")
+    #     end_idx = original_message.find("}") + 1
+
+    #     if start_idx != -1 and end_idx != -1:
+    #         modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
+    #     else:
+    #         modified_message = original_message
+
+    #     return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
     except ProtectedError as e:
-        related_objects = e.protected_objects
-        related_ids = [obj.id for obj in related_objects]
-        original_message = str(e)
-        start_idx = original_message.find("{")
-        end_idx = original_message.find("}") + 1
-
-        if start_idx != -1 and end_idx != -1:
-            modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
-        else:
-            modified_message = original_message
-
-        return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
+        # Return a more detailed error message
+        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
     return Response()
 
@@ -528,34 +536,38 @@ def delete_purchase_orders(request):
             return Response({"detail": "None of the purchase_orders found."}, status=status.HTTP_404_NOT_FOUND)
 
         # Adjust stock for each purchase order's items
-        for purchase_order in purchase_orders:
-            for item in purchase_order.items.all():
-                try:
-                    inventory = Inventory.objects.get(product=item.product, store=purchase_order.store)
-                    inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
-                    inventory_in_stock -= item.quantity
-                    inventory.in_stock = str(max(inventory_in_stock, 0))
-                    inventory.save()
-                except Inventory.DoesNotExist:
-                    pass  # Handle missing inventory if necessary
+        # for purchase_order in purchase_orders:
+        #     for item in purchase_order.items.all():
+        #         try:
+        #             inventory = Inventory.objects.get(product=item.product, store=purchase_order.store)
+        #             # inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
+        #             inventory_in_stock = int(inventory.in_stock or 0)
+        #             inventory_in_stock -= item.quantity
+        #             inventory.in_stock = str(max(inventory_in_stock, 0))
+        #             inventory.save()
+        #         except Inventory.DoesNotExist:
+        #             pass  # Handle missing inventory if necessary
 
         # Attempt to delete the purchase_orders
         try:
             count, _ = purchase_orders.delete()
             return Response({"detail": f"{count} purchase_orders deleted successfully."}, status=status.HTTP_200_OK)
+        # except ProtectedError as e:
+        #     # Handle ProtectedError logic (as before)
+        #     related_objects = e.protected_objects
+        #     related_ids = [obj.id for obj in related_objects]
+        #     original_message = str(e)
+        #     start_idx = original_message.find("{")
+        #     end_idx = original_message.find("}") + 1
+
+        #     if start_idx != -1 and end_idx != -1:
+        #         modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
+        #     else:
+        #         modified_message = original_message
+
+        #     return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
         except ProtectedError as e:
-            # Handle ProtectedError logic (as before)
-            related_objects = e.protected_objects
-            related_ids = [obj.id for obj in related_objects]
-            original_message = str(e)
-            start_idx = original_message.find("{")
-            end_idx = original_message.find("}") + 1
-
-            if start_idx != -1 and end_idx != -1:
-                modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
-            else:
-                modified_message = original_message
-
-            return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
+            # Return a more detailed error message
+            return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
