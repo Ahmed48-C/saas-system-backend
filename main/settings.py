@@ -147,3 +147,5 @@ SIMPLE_JWT = {
     # controls for how long the token can be used
     "ACCESS_TOKEN_LIFETIME": timedelta(days=2), #days/minutes/seconds
 }
+
+IMAGE_PATH_CLOUDINARY = "https://res.cloudinary.com/dblq0iusj/image/upload/v1730376611/"
