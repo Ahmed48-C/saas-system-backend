@@ -1,10 +1,13 @@
 from django.utils import timezone
 from rest_framework import serializers
 from app.features.product.models import Product
+from main.settings import IMAGE_PATH_CLOUDINARY
 
 
 
 class GetSingleProductSerializer(serializers.ModelSerializer):
+    image_file = serializers.SerializerMethodField('get_image_file')
+
     class Meta:
         model = Product
         fields = [
@@ -12,6 +15,7 @@ class GetSingleProductSerializer(serializers.ModelSerializer):
             'code',
             'name',
             'description',
+            'image_file',
             # 'supplier_id',
             'brand',
             'measure_unit',
@@ -24,6 +28,11 @@ class GetSingleProductSerializer(serializers.ModelSerializer):
             'dimension_unit',
             'weight_unit',
         ]
+
+    @staticmethod
+    def get_image_file(obj):
+        if obj.image:
+            return IMAGE_PATH_CLOUDINARY + obj.image
 
 
 class ProductGetAllSerializer(serializers.ModelSerializer):
@@ -74,4 +83,5 @@ class ProductCreateUpdateSerializer(serializers.ModelSerializer):
             'size',
             'dimension_unit',
             'weight_unit',
+            'image', # stores the filename of the image
         ]

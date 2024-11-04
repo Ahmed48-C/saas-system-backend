@@ -7,6 +7,7 @@ class Product(models.Model):
     code = models.CharField(max_length=80)
     name = models.CharField(max_length=80)
     description = models.TextField(blank=True, null=True)
+    image = models.CharField(max_length=300, null=True, blank=True)
 
     brand = models.CharField(max_length=180, null=True, blank=True)
 

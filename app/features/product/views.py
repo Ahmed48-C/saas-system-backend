@@ -19,6 +19,10 @@ from app.features.product.serializers import (
 # Create your views here.
 
 from app.features.product.models import Product
+from app.common.common import (
+    add_timestamp_to_image_file,
+    upload_image_by_thread,
+)
 
 
 @api_view(['GET'])
@@ -38,6 +42,12 @@ def get_all_product(request):
 
 @api_view(['POST'])
 def create_product(request):
+    image = add_timestamp_to_image_file(request.data['image'])
+    request.data['image'] = image
+    image_file = request.data.pop('image_file')
+
+    upload_image_by_thread(image_file, image)
+
     serializer = ProductCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
     serializer.save()
@@ -50,6 +60,12 @@ def update_product(request, product_id):
         product = Product.objects.get(id=product_id)
     except Product.DoesNotExist:
         return Response({"detail": "Not Found."}, status=status.HTTP_404_NOT_FOUND)
+
+    image = add_timestamp_to_image_file(request.data['image'])
+    request.data['image'] = image
+    image_file = request.data.pop('image_file')
+
+    upload_image_by_thread(image_file, image)
 
     serializer = ProductCreateUpdateSerializer(product, data=request.data)
     serializer.is_valid(raise_exception=True)  # Raise exception on validation failure
