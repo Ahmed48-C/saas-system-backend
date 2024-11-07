@@ -42,11 +42,20 @@ def get_all_product(request):
 
 @api_view(['POST'])
 def create_product(request):
-    image = add_timestamp_to_image_file(request.data['image'])
-    request.data['image'] = image
-    image_file = request.data.pop('image_file')
+    # image = add_timestamp_to_image_file(request.data['image'])
+    # request.data['image'] = image
+    # image_file = request.data.pop('image_file')
 
-    upload_image_by_thread(image_file, image)
+    # upload_image_by_thread(image_file, image)
+    
+    # Check if 'image' is in request data, and only process it if present
+    if 'image' in request.data:
+        image = add_timestamp_to_image_file(request.data['image'])
+        request.data['image'] = image
+        image_file = request.data.pop('image_file', None)  # Use pop with a default value
+
+        if image_file:
+            upload_image_by_thread(image_file, image)
 
     serializer = ProductCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -61,11 +70,20 @@ def update_product(request, product_id):
     except Product.DoesNotExist:
         return Response({"detail": "Not Found."}, status=status.HTTP_404_NOT_FOUND)
 
-    image = add_timestamp_to_image_file(request.data['image'])
-    request.data['image'] = image
-    image_file = request.data.pop('image_file')
+    # image = add_timestamp_to_image_file(request.data['image'])
+    # request.data['image'] = image
+    # image_file = request.data.pop('image_file')
 
-    upload_image_by_thread(image_file, image)
+    # upload_image_by_thread(image_file, image)
+
+    # Check if 'image' is in request data, and only process it if present
+    if 'image' in request.data:
+        image = add_timestamp_to_image_file(request.data['image'])
+        request.data['image'] = image
+        image_file = request.data.pop('image_file', None)  # Use pop with a default value
+
+        if image_file:
+            upload_image_by_thread(image_file, image)
 
     serializer = ProductCreateUpdateSerializer(product, data=request.data)
     serializer.is_valid(raise_exception=True)  # Raise exception on validation failure
