@@ -47,10 +47,15 @@ def create_product(request):
     # image_file = request.data.pop('image_file')
 
     # upload_image_by_thread(image_file, image)
-    
+
     # Check if 'image' is in request data, and only process it if present
     if 'image' in request.data:
         image = add_timestamp_to_image_file(request.data['image'])
+
+        # Verify that the image has a .png extension
+        if not image.lower().endswith('.png'):
+            return Response({"detail": "Image must be a PNG file."}, status=status.HTTP_400_BAD_REQUEST)
+
         request.data['image'] = image
         image_file = request.data.pop('image_file', None)  # Use pop with a default value
 
@@ -79,6 +84,11 @@ def update_product(request, product_id):
     # Check if 'image' is in request data, and only process it if present
     if 'image' in request.data:
         image = add_timestamp_to_image_file(request.data['image'])
+
+        # Verify that the image has a .png extension
+        if not image.lower().endswith('.png'):
+            return Response({"detail": "Image must be a PNG file."}, status=status.HTTP_400_BAD_REQUEST)
+
         request.data['image'] = image
         image_file = request.data.pop('image_file', None)  # Use pop with a default value
 
