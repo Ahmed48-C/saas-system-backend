@@ -13,3 +13,4 @@ from app.features.purchase_order.models import PurchaseOrder
 from app.features.balance.models import Balance
 from app.features.balance_log.models import BalanceLog
 from app.features.transfer.models import Transfer
+from app.features.sales_order.models import SalesOrder
