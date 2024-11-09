@@ -37,6 +37,7 @@ class GetSingleProductSerializer(serializers.ModelSerializer):
 
 class ProductGetAllSerializer(serializers.ModelSerializer):
     # supplier = serializers.SerializerMethodField('get_supplier_name')
+    image_file = serializers.SerializerMethodField('get_image_file')
 
     class Meta:
         model = Product
@@ -45,6 +46,7 @@ class ProductGetAllSerializer(serializers.ModelSerializer):
             'code',
             'name',
             'description',
+            'image_file',
             # 'supplier',
             'brand',
             'measure_unit',
@@ -61,6 +63,11 @@ class ProductGetAllSerializer(serializers.ModelSerializer):
     # @staticmethod
     # def get_supplier_name(obj):
         # return obj.supplier and obj.supplier.name
+
+    @staticmethod
+    def get_image_file(obj):
+        if obj.image:
+            return IMAGE_PATH_CLOUDINARY + obj.image
 
 
 class ProductCreateUpdateSerializer(serializers.ModelSerializer):
