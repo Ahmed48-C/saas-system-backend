@@ -214,7 +214,7 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         #     })
 
         # If status is 'Completed', update inventory
-        if status_order == 'Completed':
+        if status_order == "Completed":
             if balance.amount - total < 0:
                 raise serializers.ValidationError({
                     "detail": "The total amount exceeds the available balance. Please adjust the order or add funds."
@@ -243,9 +243,9 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                                 "detail": f"Cannot add {quantity} to inventory. Maximum stock level of {max_stock} would be exceeded."
                             })
 
-                    # Deduct the total from the balance
-                    balance.amount -= total
-                    balance.save()
+                    # # Deduct the total from the balance
+                    # balance.amount -= total
+                    # balance.save()
 
 
                     # Save new_in_stock back as string
@@ -261,6 +261,10 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                         supplier_id=supplier_id,
                         # code=validated_data.get('code')
                     )
+
+        # Deduct the total from the balance
+            balance.amount -= total
+            balance.save()
 
         # Create the PurchaseOrder after inventory and balance updates
         purchase_order = PurchaseOrder.objects.create(
