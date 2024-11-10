@@ -154,11 +154,11 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     new_quantity = int(item_data.get('quantity', 0))
                     new_in_stock = inventory_in_stock - new_quantity
 
-                    if inventory.max_stock:
-                        max_stock = int(inventory.max_stock)
-                        if new_in_stock > max_stock:
+                    if inventory.min_stock:
+                        min_stock = int(inventory.min_stock)
+                        if new_in_stock < min_stock:
                             raise serializers.ValidationError({
-                                "detail": f"Cannot add {quantity} to inventory. Maximum stock level of {max_stock} would be exceeded."
+                                "detail": f"Cannot deduct from inventory. Minimum stock level of {min_stock} would be reached."
                             })
 
                     inventory.in_stock = new_in_stock
@@ -223,11 +223,11 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     new_in_stock = inventory_in_stock - updated_quantity
 
                     # Ensure new stock doesn't exceed max stock
-                    if inventory.max_stock:
-                        max_stock = int(inventory.max_stock)
-                        if new_in_stock > max_stock:
+                    if inventory.min_stock:
+                        min_stock = int(inventory.min_stock)
+                        if new_in_stock < min_stock:
                             raise serializers.ValidationError({
-                                "detail": f"Cannot add {quantity_difference} to inventory. Maximum stock level of {max_stock} would be exceeded."
+                                "detail": f"Cannot deduct from inventory. Minimum stock level of {min_stock} would be reached."
                             })
 
                     inventory.in_stock = new_in_stock
