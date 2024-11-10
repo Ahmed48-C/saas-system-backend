@@ -90,6 +90,20 @@ def update_sales_order(request, sales_order_id):
 
 
 @api_view(['DELETE'])
+def delete_sales_order(request, sales_order_id):
+    try:
+        sales_order = SalesOrder.objects.get(id=sales_order_id)
+        sales_order.delete()
+    except SalesOrder.DoesNotExist:
+        return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    except ProtectedError as e:
+        # Return a more detailed error message
+        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+    return Response()
+
+
+@api_view(['DELETE'])
 def delete_sales_orders(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):
