@@ -136,6 +136,30 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
 
+        items_data = validated_data.pop('items')  # Extract sales items data
+
+        status_order = validated_data.get('status')
+        total = validated_data.get('total')
+        store_id = validated_data.get('store_id')
+        balance_id = validated_data.get('balance_id')
+        customer_id = validated_data.get('customer_id')
+
+        # Fetch the balance associated with the balance_id
+        try:
+            balance = Balance.objects.get(id=balance_id)
+        except Balance.DoesNotExist:
+            raise serializers.ValidationError({"balance": "Balance not found."})
+
+        # Create the SalesOrder after inventory and balance updates
+        sales_order = SalesOrder.objects.create(
+            code=validated_data['code'],
+            total=total,
+            status=status_order,
+            store_id=store_id,
+            balance_id=balance_id,
+            customer_id=customer_id
+        )
+
         # Create the SalesItem(s) for this SalesOrder
         for item_data in items_data:
             SalesItem.objects.create(
