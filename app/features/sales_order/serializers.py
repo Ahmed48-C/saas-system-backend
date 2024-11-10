@@ -121,30 +121,20 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
             'items'
         ]
 
+    def _update_sales_items(self, sales_order, items_data):
+        # Clear existing items and recreate them
+        SalesItem.objects.filter(sales_order=sales_order).delete()
+
+        for item_data in items_data:
+            SalesItem.objects.create(
+                price=item_data['price'],
+                quantity=item_data['quantity'],
+                total=item_data['total'],
+                product_id=item_data['product_id'],
+                sales_order=sales_order
+            )
+
     def create(self, validated_data):
-        items_data = validated_data.pop('items')  # Extract sales items data
-
-        status_order = validated_data.get('status')
-        total = validated_data.get('total')
-        store_id = validated_data.get('store_id')
-        balance_id = validated_data.get('balance_id')
-        customer_id = validated_data.get('customer_id')
-
-        # Fetch the balance associated with the balance_id
-        try:
-            balance = Balance.objects.get(id=balance_id)
-        except Balance.DoesNotExist:
-            raise serializers.ValidationError({"balance": "Balance not found."})
-
-        # Create the SalesOrder after inventory and balance updates
-        sales_order = SalesOrder.objects.create(
-            code=validated_data['code'],
-            total=total,
-            status=status_order,
-            store_id=store_id,
-            balance_id=balance_id,
-            customer_id=customer_id
-        )
 
         # Create the SalesItem(s) for this SalesOrder
         for item_data in items_data:
@@ -156,10 +146,43 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                 sales_order=sales_order
             )
 
+            if status_order == "COMPLETED":
+                # 2 - Reduce inventory stock for the sold product
+                try:
+                    inventory = Inventory.objects.get(product=item_data['product_id'], store=store_id)
+                    inventory_in_stock = int(inventory.in_stock) if inventory.in_stock else 0
+                    new_quantity = int(item_data.get('quantity', 0))
+                    new_in_stock = inventory_in_stock - new_quantity
+
+                    if inventory.max_stock:
+                        max_stock = int(inventory.max_stock)
+                        if new_in_stock > max_stock:
+                            raise serializers.ValidationError({
+                                "detail": f"Cannot add {quantity} to inventory. Maximum stock level of {max_stock} would be exceeded."
+                            })
+
+                    inventory.in_stock = new_in_stock
+                    inventory.save()
+
+                except Inventory.DoesNotExist:
+                    Inventory.objects.create(
+                        in_stock=quantity,
+                        product_id=product_id,
+                        store_id=store_id,
+                    )
+
+        if status_order == "COMPLETED":
+            # 1 - Add payment amount to balance
+            balance.amount += total
+            balance.save()
+
         return sales_order
 
 
     def update(self, instance, validated_data):
+        # Track the original status of the order
+        original_status_order = instance.status
+
         items_data = validated_data.pop('items')
         updated_status = validated_data.get('status')
         updated_total = validated_data.get('total')
@@ -179,6 +202,39 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         except Balance.DoesNotExist:
             raise serializers.ValidationError({"balance": "Balance not found."})
 
+        if original_status_order == "PENDING" and updated_status == "COMPLETED":
+
+            # 1 - Add payment amount to balance
+            balance.amount += updated_total
+            balance.save()
+
+            # 2 - Reduce inventory stock for the sold product
+            for item in items_data:
+                try:
+                    inventory = Inventory.objects.get(
+                        product=item.get('product_id'),
+                        store=updated_store_id
+                    )
+
+                    # Calculate the difference in quantity
+                    updated_quantity = int(item.get('quantity'))
+
+                    inventory_in_stock = int(inventory.in_stock) if inventory.in_stock else 0
+                    new_in_stock = inventory_in_stock - updated_quantity
+
+                    # Ensure new stock doesn't exceed max stock
+                    if inventory.max_stock:
+                        max_stock = int(inventory.max_stock)
+                        if new_in_stock > max_stock:
+                            raise serializers.ValidationError({
+                                "detail": f"Cannot add {quantity_difference} to inventory. Maximum stock level of {max_stock} would be exceeded."
+                            })
+
+                    inventory.in_stock = new_in_stock
+                    inventory.save()
+
+                except Inventory.DoesNotExist:
+                    pass
 
         instance.total = updated_total
         instance.status = updated_status
@@ -186,5 +242,8 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         instance.balance_id = balance_id
         instance.customer_id = customer_id
         instance.save()
+
+        # Update the SalesItem(s) related to this SalesOrder
+        self._update_sales_items(instance, items_data)
 
         return instance

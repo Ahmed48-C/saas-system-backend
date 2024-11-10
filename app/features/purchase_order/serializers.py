@@ -446,7 +446,7 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                             "detail": f"Cannot add {quantity} to inventory. Maximum stock level of {max_stock} would be exceeded."
                         })
 
-                inventory.in_stock = str(new_in_stock)
+                inventory.in_stock = new_in_stock
                 inventory.save()
 
             except Inventory.DoesNotExist:
