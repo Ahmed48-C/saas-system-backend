@@ -7,6 +7,7 @@ from app.features.purchase_order.views import (
     delete_purchase_order_stock,
     get_purchase_order_by_id,
     delete_purchase_orders,
+    get_purchase_status_choices,
 )
 
 urlpatterns = [
@@ -17,4 +18,5 @@ urlpatterns = [
     path('delete/purchase_order/<purchase_order_id>/', delete_purchase_order),
     path('delete/purchase_order_stock/<purchase_order_id>/', delete_purchase_order_stock),
     path('delete/purchase_orders/', delete_purchase_orders),
+    path('get/purchase_status/', get_purchase_status_choices),
 ]

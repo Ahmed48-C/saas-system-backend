@@ -17,9 +17,10 @@ from app.features.sales_order.serializers import (
 
 # Create your views here.
 
-from app.features.sales_order.models import SalesOrder
+from app.features.sales_order.models import SalesOrder, SalesStatus
 from app.features.inventory.models import Inventory
 from app.features.balance.models import Balance
+from app.common.json_utils import JsonUtils
 
 
 
@@ -137,3 +138,9 @@ def delete_sales_orders(request):
             return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(["GET"])
+def get_sales_status_choices(request):
+    obj = JsonUtils.get_choices_as_list(SalesStatus.choices)
+    return JsonResponse(obj, safe=False)
