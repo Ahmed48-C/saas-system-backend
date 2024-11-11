@@ -6,6 +6,7 @@ from app.features.sales_order.views import (
     update_sales_order,
     delete_sales_orders,
     delete_sales_order,
+    get_sales_status_choices,
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
     path('put/sales_order/<sales_order_id>/', update_sales_order),
     path('delete/sales_orders/', delete_sales_orders),
     path('delete/sales_order/<sales_order_id>/', delete_sales_order),
+    path('get/sales_status/', get_sales_status_choices),
 ]
