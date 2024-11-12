@@ -9,8 +9,8 @@ class SalesOrderQueryManager(CommonQueryManager):
 
         return CommonQueryManager.get_filtered_result(request, result)
 
-    def get_all_by_limit(self, request):
-        items = self.filter_by_permission_and_param(request)
+    def get_all_by_limit(self, request, **filters):
+        items = self.filter_by_permission_and_param(request).filter(**filters)
 
         actual_total_count = items.count()
 

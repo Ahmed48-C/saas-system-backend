@@ -214,7 +214,7 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         #     })
 
         # If status is 'Completed', update inventory
-        if status_order == "Completed":
+        if status_order.upper() == "COMPLETED":
             if balance.amount - total < 0:
                 raise serializers.ValidationError({
                     "detail": "The total amount exceeds the available balance. Please adjust the order or add funds."
@@ -384,7 +384,7 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"balance": "Balance not found."})
 
         # Balance adjustment based on status change
-        if original_status == 'Pending' and updated_status == 'Completed':
+        if original_status.upper() == 'PENDING' and updated_status.upper() == 'COMPLETED':
             # Deduct the updated total from the balance
             balance_adjustment = updated_total
             if balance.amount - balance_adjustment < 0:
@@ -394,13 +394,13 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
             balance.amount -= balance_adjustment
             balance.save()
 
-        # If changing from 'Completed' to 'Pending', refund the balance
-        if original_status == 'Completed' and updated_status == 'Pending':
+        # If changing from 'COMPLETED' to 'Pending', refund the balance
+        if original_status.upper() == 'COMPLETED' and updated_status.upper() == 'PENDING':
             balance.amount += original_total
             balance.save()
 
         # If staying in Completed and total has changed, adjust balance accordingly
-        if original_status == 'Completed' and updated_status == 'Completed' and original_total != updated_total:
+        if original_status.upper() == 'COMPLETED' and updated_status.upper() == 'COMPLETED' and original_total != updated_total:
             balance_adjustment = updated_total - original_total
             if balance.amount - balance_adjustment < 0:
                 raise serializers.ValidationError({
@@ -410,12 +410,12 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
             balance.save()
 
         # Update inventory based on status changes
-        if original_status == 'Pending' and updated_status == 'Completed':
+        if original_status.upper() == 'PENDING' and updated_status.upper() == 'COMPLETED':
             # self._update_inventory_on_completion(items_data, updated_store_id, validated_data.get('code'))
             self._update_inventory_on_completion(items_data, updated_store_id, supplier_id)
-        elif original_status == 'Completed' and updated_status == 'Pending':
+        elif original_status.upper() == 'COMPLETED' and updated_status.upper() == 'PENDING':
             self._revert_inventory_on_pending(original_items, original_store, original_supplier)
-        elif original_status == 'Completed' and updated_status == 'Completed':
+        elif original_status.upper() == 'COMPLETED' and updated_status.upper() == 'COMPLETED':
             self._adjust_inventory_on_update(original_items, items_data, original_store, updated_store_id, original_supplier, supplier_id)
 
         # Update the purchase order instance with the validated data
