@@ -7,10 +7,16 @@ from app.features.balance.models import Balance
 from app.features.customer.models import Customer
 # Create your models here.
 
+class SalesStatus(models.TextChoices):
+    PENDING = 'Pending', 'Pending'
+    COMPLETED = 'Completed', 'Completed'
+    DELIVERY = 'Delivery', 'Delivery'
+
+
 class SalesOrder(models.Model):
     code = models.CharField(max_length=80)
     total = models.DecimalField(max_digits=35, decimal_places=2)
-    status = models.CharField(max_length=50)
+    status = models.CharField(max_length=50, choices=SalesStatus.choices, default=SalesStatus.PENDING)
 
     operator = models.ForeignKey(Operator, on_delete=models.PROTECT, null=True, blank=True)
     store = models.ForeignKey(Store, on_delete=models.PROTECT, null=True, blank=True)
