@@ -38,6 +38,19 @@ def get_all_sales_orders(request):
     return Response(json_obj)
 
 
+@api_view(['GET'])
+# @authentication_classes([JWTAuthentication])
+# @permission_classes([IsAuthenticated])
+def get_completed_sales_orders(request):
+    records, actual_total_count = SalesOrder.objects.get_all_by_limit(request, status="Completed")
+    serializer = SalesOrderGetAllSerializer(records, many=True)
+
+    json_obj = SalesOrder.objects.json_object(
+        actual_total_count=actual_total_count,
+        data=serializer.data
+    )
+
+    return Response(json_obj)
 
 
 @api_view(['GET'])

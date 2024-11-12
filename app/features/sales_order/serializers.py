@@ -170,7 +170,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                 sales_order=sales_order
             )
 
-            if status_order == "COMPLETED":
+            if status_order.upper() == "COMPLETED":
                 # 2 - Reduce inventory stock for the sold product
                 try:
                     inventory = Inventory.objects.get(product=item_data['product_id'], store=store_id)
@@ -189,13 +189,14 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     inventory.save()
 
                 except Inventory.DoesNotExist:
-                    Inventory.objects.create(
-                        in_stock=quantity,
-                        product_id=product_id,
-                        store_id=store_id,
-                    )
+                    # Inventory.objects.create(
+                    #     in_stock=quantity,
+                    #     product_id=product_id,
+                    #     store_id=store_id,
+                    # )
+                    pass
 
-        if status_order == "COMPLETED":
+        if status_order.upper() == "COMPLETED":
             # 1 - Add payment amount to balance
             balance.amount += total
             balance.save()
@@ -226,7 +227,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         except Balance.DoesNotExist:
             raise serializers.ValidationError({"balance": "Balance not found."})
 
-        if original_status_order == "PENDING" and updated_status == "COMPLETED":
+        if original_status_order.upper() == "PENDING" and updated_status.upper() == "COMPLETED":
 
             # 1 - Add payment amount to balance
             balance.amount += updated_total
