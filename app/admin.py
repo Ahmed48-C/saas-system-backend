@@ -14,3 +14,5 @@ from app.features.balance.admin import BalanceAdmin
 from app.features.balance_log.admin import BalanceLogAdmin
 from app.features.transfer.admin import TransferAdmin
 from app.features.sales_order.admin import SalesOrderAdmin
+from app.features.courier.admin import CourierAdmin
+from app.features.sales_order_delivery.admin import SalesOrderDeliveryAdmin
