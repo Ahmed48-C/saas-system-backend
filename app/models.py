@@ -14,3 +14,5 @@ from app.features.balance.models import Balance
 from app.features.balance_log.models import BalanceLog
 from app.features.transfer.models import Transfer
 from app.features.sales_order.models import SalesOrder
+from app.features.courier.models import Courier
+from app.features.sales_order_delivery.models import SalesOrderDelivery
