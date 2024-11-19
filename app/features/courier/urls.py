@@ -5,6 +5,8 @@ from app.features.courier.views import (
     update_courier,
     delete_courier,
     get_courier_by_id,
+    get_courier_vehicle_types,
+    delete_couriers,
 )
 
 urlpatterns = [
@@ -13,4 +15,6 @@ urlpatterns = [
     path('post/courier/', create_courier),
     path('put/courier/<courier_id>/', update_courier),
     path('delete/courier/<courier_id>/', delete_courier),
+    path('delete/couriers/', delete_couriers),
+    path('get/vehicle_types/', get_courier_vehicle_types),
 ]

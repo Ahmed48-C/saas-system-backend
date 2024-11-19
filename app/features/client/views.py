@@ -1,4 +1,6 @@
 from django.shortcuts import render
+from django.http import JsonResponse
+from django.db.models.deletion import ProtectedError
 
 # for JWT token and authentication control
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
@@ -74,3 +76,25 @@ def get_client_by_id(request, client_id):
 
     serializer = GetSingleClientSerializer(client)
     return Response(serializer.data)
+
+
+@api_view(['DELETE'])
+def delete_clients(request):
+    # Ensure the request body contains a list of IDs
+    if not isinstance(request.data, list):
+        return Response({"detail": "Invalid data format. Expected a list of IDs."}, status=status.HTTP_400_BAD_REQUEST)
+
+    try:
+        clients = Client.objects.filter(id__in=request.data)
+        if not clients.exists():
+            return Response({"detail": "None of the clients found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Attempt to delete the clients
+        try:
+            count, _ = clients.delete()
+            return Response({"detail": f"{count} clients deleted successfully."}, status=status.HTTP_200_OK)
+        except ProtectedError as e:
+            # Return a more detailed error message
+            return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
