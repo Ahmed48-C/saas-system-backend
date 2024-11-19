@@ -5,6 +5,7 @@ from app.features.client.views import (
     update_client,
     delete_client,
     get_client_by_id,
+    delete_clients,
 )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path('post/client/', create_client),
     path('put/client/<client_id>/', update_client),
     path('delete/client/<client_id>/', delete_client),
+    path('delete/clients/', delete_clients),
 ]
