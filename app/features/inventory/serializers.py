@@ -65,6 +65,13 @@ class InventoryCreateUpdateSerializer(serializers.ModelSerializer):
     supplier_id = serializers.CharField(max_length=10)
     product_id = serializers.CharField(max_length=10)
 
+    def validate(self, attrs):
+        # Convert empty strings to None
+        for field in ['in_stock', 'on_order', 'reserved', 'min_stock', 'max_stock']:
+            if attrs.get(field) == '':
+                attrs[field] = None
+        return attrs
+
     class Meta:
         model = Inventory
         fields = [
