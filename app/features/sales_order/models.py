@@ -5,6 +5,7 @@ from app.features.store.models import Store
 from app.features.product.models import Product
 from app.features.balance.models import Balance
 from app.features.customer.models import Customer
+from app.features.client.models import Client
 # Create your models here.
 
 class SalesStatus(models.TextChoices):
@@ -22,6 +23,7 @@ class SalesOrder(models.Model):
     store = models.ForeignKey(Store, on_delete=models.PROTECT, null=True, blank=True)
     balance = models.ForeignKey(Balance, on_delete=models.PROTECT, null=True, blank=True)
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT, null=True, blank=True)
+    client = models.ForeignKey(Client, on_delete=models.PROTECT, null=True, blank=True)
 
     objects = SalesOrderQueryManager()
 

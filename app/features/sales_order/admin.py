@@ -28,4 +28,5 @@ class SalesOrderAdmin(admin.ModelAdmin):
         'store',
         'balance',
         'customer',
+        'client',
     ]
