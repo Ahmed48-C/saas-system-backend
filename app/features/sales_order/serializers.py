@@ -3,7 +3,7 @@ from rest_framework import serializers
 from app.features.sales_order.models import SalesOrder, SalesItem
 from app.features.inventory.models import Inventory
 from app.features.balance.models import Balance
-
+from app.features.inventory_log.services import InventoryLogService
 
 
 class SalesItemSerializer(serializers.ModelSerializer):
@@ -199,6 +199,17 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     inventory.in_stock = new_in_stock
                     inventory.save()
 
+                    InventoryLogService().add_inventory_log(
+                        userprofile_id = None, #TODO
+                        product_id = item.get('product_id'),
+                        store_id = store_id,
+                        stock = inventory_in_stock,
+                        action = ActionLog.MINUS,
+                        auto_generated_note = AutoNoteLog.COMPLETED_SALES_ORDER,
+                        stock_before_action = inventory_in_stock,
+                        stock_after_action = new_in_stock,
+                    )
+
                 except Inventory.DoesNotExist:
                     # Inventory.objects.create(
                     #     in_stock=quantity,
@@ -270,6 +281,17 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
 
                     inventory.in_stock = new_in_stock
                     inventory.save()
+
+                    InventoryLogService().add_inventory_log(
+                        userprofile_id = None, #TODO
+                        product_id = item.get('product_id'),
+                        store_id = store_id,
+                        stock = inventory_in_stock,
+                        action = ActionLog.MINUS,
+                        auto_generated_note = AutoNoteLog.COMPLETED_SALES_ORDER,
+                        stock_before_action = inventory_in_stock,
+                        stock_after_action = new_in_stock,
+                    )
 
                 except Inventory.DoesNotExist:
                     pass

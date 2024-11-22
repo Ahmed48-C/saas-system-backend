@@ -3,6 +3,8 @@ from rest_framework import serializers
 from app.features.purchase_order.models import PurchaseOrder, PurchaseItem
 from app.features.inventory.models import Inventory
 from app.features.balance.models import Balance
+from app.features.inventory_log.models import ActionLog, AutoNoteLog
+from app.features.inventory_log.services import InventoryLogService
 
 
 # class GetSinglePurchaseOrderSerializer(serializers.ModelSerializer):
@@ -252,6 +254,17 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     inventory.in_stock = str(new_in_stock)
                     inventory.save()
 
+                    InventoryLogService().add_inventory_log(
+                        userprofile_id = None, #TODO
+                        product_id = product_id,
+                        store_id=store_id,
+                        stock = inventory_in_stock,
+                        action = ActionLog.ADD,
+                        auto_generated_note = AutoNoteLog.NEW_PURCHASE_ORDER,
+                        stock_before_action = inventory_in_stock,
+                        stock_after_action = new_in_stock,
+                    )
+
                 except Inventory.DoesNotExist:
                     # Create new inventory if it does not exist
                     Inventory.objects.create(
@@ -260,6 +273,16 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                         store_id=store_id,
                         supplier_id=supplier_id,
                         # code=validated_data.get('code')
+                    )
+                    InventoryLogService().add_inventory_log(
+                        userprofile_id = None, #TODO
+                        product_id = product_id,
+                        store_id=store_id,
+                        stock = 0,
+                        action = ActionLog.NEW_PRODUCT,
+                        auto_generated_note = AutoNoteLog.NEW_PRODUCT,
+                        stock_before_action = 0,
+                        stock_after_action = int(quantity),
                     )
 
         # Deduct the total from the balance
@@ -453,6 +476,17 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                 inventory.in_stock = new_in_stock
                 inventory.save()
 
+                InventoryLogService().add_inventory_log(
+                    userprofile_id = None, #TODO
+                    product_id = product_id,
+                    store_id=store_id,
+                    stock = inventory_in_stock,
+                    action = ActionLog.ADD,
+                    auto_generated_note = AutoNoteLog.NEW_PURCHASE_ORDER,
+                    stock_before_action = inventory_in_stock,
+                    stock_after_action = new_in_stock,
+                )
+
             except Inventory.DoesNotExist:
                 Inventory.objects.create(
                     in_stock=str(quantity),
@@ -460,6 +494,16 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     store_id=store_id,
                     supplier_id=supplier_id,
                     # code=code
+                )
+                InventoryLogService().add_inventory_log(
+                    userprofile_id = None, #TODO
+                    product_id = product_id,
+                    store_id=store_id,
+                    stock = 0,
+                    action = ActionLog.NEW_PRODUCT,
+                    auto_generated_note = AutoNoteLog.NEW_PRODUCT,
+                    stock_before_action = 0,
+                    stock_after_action = int(quantity),
                 )
 
     def _revert_inventory_on_pending(self, original_items, store, supplier):
