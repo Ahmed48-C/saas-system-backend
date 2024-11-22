@@ -4,6 +4,7 @@ from app.features.sales_order.models import SalesOrder, SalesItem
 from app.features.inventory.models import Inventory
 from app.features.balance.models import Balance
 from app.features.inventory_log.services import InventoryLogService
+from app.features.inventory_log.models import ActionLog, AutoNoteLog
 
 
 class SalesItemSerializer(serializers.ModelSerializer):
@@ -201,7 +202,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
 
                     InventoryLogService().add_inventory_log(
                         userprofile_id = None, #TODO
-                        product_id = item.get('product_id'),
+                        product_id = item_data.get('product_id'),
                         store_id = store_id,
                         stock = inventory_in_stock,
                         action = ActionLog.MINUS,
@@ -285,7 +286,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     InventoryLogService().add_inventory_log(
                         userprofile_id = None, #TODO
                         product_id = item.get('product_id'),
-                        store_id = store_id,
+                        store_id = updated_store_id,
                         stock = inventory_in_stock,
                         action = ActionLog.MINUS,
                         auto_generated_note = AutoNoteLog.COMPLETED_SALES_ORDER,
