@@ -11,6 +11,7 @@ from app.features.client.models import Client
 class SalesStatus(models.TextChoices):
     PENDING = 'Pending', 'Pending'
     COMPLETED = 'Completed', 'Completed'
+    CANCELLED = 'Cancelled', 'Cancelled'
     DELIVERY = 'Delivery', 'Delivery'
 
 
