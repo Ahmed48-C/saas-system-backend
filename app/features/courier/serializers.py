@@ -19,7 +19,7 @@ class GetSingleCourierSerializer(serializers.ModelSerializer):
 class CourierGetAllSerializer(serializers.ModelSerializer):
     class Meta:
         model = Courier
-        fields = ['id', 'name', 'phone', 'vehicle_type', 'is_available']
+        fields = ['id', 'name', 'phone', 'vehicle_type', 'is_available', 'default_delivery_cost']
 
 
 class CourierCreateUpdateSerializer(serializers.ModelSerializer):

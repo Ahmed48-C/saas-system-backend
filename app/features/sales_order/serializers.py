@@ -54,6 +54,7 @@ class GetSingleSalesOrderSerializer(serializers.ModelSerializer):
             'store_id',
             'balance_id',
             'customer_id',
+            'client_id',
             'items',  # Add the nested items field here
         ]
 
@@ -63,6 +64,7 @@ class SalesOrderGetAllSerializer(serializers.ModelSerializer):
     store = serializers.SerializerMethodField('get_store_name')
     balance = serializers.SerializerMethodField('get_balance_name')
     customer = serializers.SerializerMethodField('get_customer_name')
+    client = serializers.SerializerMethodField('get_client_name')
     items = SalesItemSerializer(many=True)  # Include the nested items serializer
 
     class Meta:
@@ -76,6 +78,7 @@ class SalesOrderGetAllSerializer(serializers.ModelSerializer):
             'store',
             'balance',
             'customer',
+            'client',
             'items',    # Add the nested items field
         ]
 
@@ -94,6 +97,10 @@ class SalesOrderGetAllSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_customer_name(obj):
         return obj.customer and obj.customer.name
+    
+    @staticmethod
+    def get_client_name(obj):
+        return obj.client and obj.client.name
 
 
 class SalesItemCreateUpdateSerializer(serializers.ModelSerializer):
@@ -107,6 +114,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
     store_id = serializers.CharField(max_length=10)
     balance_id = serializers.CharField(max_length=10)
     customer_id = serializers.CharField(max_length=10)
+    client_id = serializers.CharField(max_length=10)
     items = SalesItemCreateUpdateSerializer(many=True)
 
     class Meta:
@@ -118,6 +126,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
             'store_id',
             'balance_id',
             'customer_id',
+            'client_id',
             'items'
         ]
 
@@ -143,6 +152,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         store_id = validated_data.get('store_id')
         balance_id = validated_data.get('balance_id')
         customer_id = validated_data.get('customer_id')
+        client_id = validated_data.get('client_id')
 
         # Fetch the balance associated with the balance_id
         try:
@@ -157,7 +167,8 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
             status=status_order,
             store_id=store_id,
             balance_id=balance_id,
-            customer_id=customer_id
+            customer_id=customer_id,
+            client_id=client_id
         )
 
         # Create the SalesItem(s) for this SalesOrder
@@ -225,11 +236,13 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         updated_store_id = validated_data.get('store_id')
         balance_id = validated_data.get('balance_id')
         customer_id = validated_data.get('customer_id')
+        client_id = validated_data.get('client_id')
 
         original_status = instance.status
         original_total = instance.total
         original_store = instance.store
         original_customer = instance.customer
+        original_client = instance.client
         original_items = list(instance.items.all())  # Retrieve original items for inventory adjustment
 
         # Fetch the balance associated with the balance_id
@@ -288,6 +301,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         instance.store_id = updated_store_id
         instance.balance_id = balance_id
         instance.customer_id = customer_id
+        instance.client_id = client_id
         instance.save()
 
         # Update the SalesItem(s) related to this SalesOrder

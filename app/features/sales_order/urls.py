@@ -7,6 +7,7 @@ from app.features.sales_order.views import (
     delete_sales_orders,
     delete_sales_order,
     get_completed_sales_orders,
+    get_cancelled_sales_orders,
     get_sales_status_choices,
     get_delivery_sales_orders,
 )
@@ -15,6 +16,7 @@ urlpatterns = [
     path('get/sales_order/<sales_order_id>/', get_sales_order_by_id),
     path('get/sales_orders/', get_all_sales_orders),
     path('get/completed_sales_orders/', get_completed_sales_orders),  # New endpoint
+    path('get/cancelled_sales_orders/', get_cancelled_sales_orders),
     path('get/delivery_sales_orders/', get_delivery_sales_orders),
     path('post/sales_order/', create_sales_order),
     path('put/sales_order/<sales_order_id>/', update_sales_order),
