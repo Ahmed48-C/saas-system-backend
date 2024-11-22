@@ -22,6 +22,7 @@ from app.features.purchase_order.models import PurchaseOrder, PurchaseStatus
 from app.features.inventory.models import Inventory
 from app.features.balance.models import Balance
 from app.common.json_utils import JsonUtils
+from app.features.inventory_log.models import ActionLog, AutoNoteLog
 
 
 @api_view(['GET'])
