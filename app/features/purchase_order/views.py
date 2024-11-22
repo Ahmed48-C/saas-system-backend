@@ -14,6 +14,7 @@ from app.features.purchase_order.serializers import (
     PurchaseOrderCreateUpdateSerializer,
     GetSinglePurchaseOrderSerializer,
 )
+from app.features.inventory_log.services import InventoryLogService
 
 # Create your views here.
 
@@ -335,18 +336,31 @@ def delete_purchase_order(request, purchase_order_id):
     try:
         purchase_order = PurchaseOrder.objects.get(id=purchase_order_id)
 
-        # Adjust stock based on related PurchaseItems
-        for item in purchase_order.items.all():
-            try:
-                inventory = Inventory.objects.get(product=item.product, store=purchase_order.store, supplier=purchase_order.supplier)
-                # inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
-                inventory_in_stock = int(inventory.in_stock or 0)
-                # Adjust inventory stock
-                inventory_in_stock -= item.quantity
-                inventory.in_stock = str(max(inventory_in_stock, 0))
-                inventory.save()
-            except Inventory.DoesNotExist:
-                pass  # Handle missing inventory if necessary
+        if purchase_order.status.upper() == "COMPLETED":
+            # Adjust stock based on related PurchaseItems
+            for item in purchase_order.items.all():
+                try:
+                    inventory = Inventory.objects.get(product=item.product, store=purchase_order.store, supplier=purchase_order.supplier)
+                    # inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
+                    inventory_in_stock = int(inventory.in_stock or 0)
+                    # Adjust inventory stock
+                    current_stock = int(inventory.in_stock or 0)
+                    inventory_in_stock -= item.quantity
+                    inventory.in_stock = str(max(inventory_in_stock, 0))
+                    inventory.save()
+
+                    InventoryLogService().add_inventory_log(
+                        userprofile_id = None, #TODO
+                        product_id = item.product.id,
+                        store_id = purchase_order.store.id,
+                        stock = current_stock,
+                        action = ActionLog.MINUS,
+                        auto_generated_note = AutoNoteLog.DELETE_PURCHASE_ORDER,
+                        stock_before_action = current_stock,
+                        stock_after_action = inventory.in_stock,
+                    )
+                except Inventory.DoesNotExist:
+                    pass  # Handle missing inventory if necessary
 
         purchase_order.delete()
 
@@ -423,26 +437,38 @@ def delete_purchase_order_stock(request, purchase_order_id):
     try:
         purchase_order = PurchaseOrder.objects.get(id=purchase_order_id)
         
-        # Adjust stock for each PurchaseItem
-        for item in purchase_order.items.all():
-            product = item.product
-            store = purchase_order.store
-            supplier = purchase_order.supplier
-            quantity = item.quantity
+        if purchase_order.status.upper() == "COMPLETED":
+            # Adjust stock for each PurchaseItem
+            for item in purchase_order.items.all():
+                product = item.product
+                store = purchase_order.store
+                supplier = purchase_order.supplier
+                quantity = item.quantity
 
-            try:
-                inventory = Inventory.objects.get(product=product, store=store, supplier=supplier)
-                # inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
-                inventory_in_stock = int(inventory.in_stock or 0)
+                try:
+                    inventory = Inventory.objects.get(product=product, store=store, supplier=supplier)
+                    # inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
+                    inventory_in_stock = int(inventory.in_stock or 0)
+                    current_stock = int(inventory.in_stock or 0)
+                    # Subtract the purchase item quantity from the in_stock
+                    inventory_in_stock -= quantity
 
-                # Subtract the purchase item quantity from the in_stock
-                inventory_in_stock -= quantity
+                    # Ensure in_stock doesn't go negative
+                    inventory.in_stock = str(max(inventory_in_stock, 0))
+                    inventory.save()
 
-                # Ensure in_stock doesn't go negative
-                inventory.in_stock = str(max(inventory_in_stock, 0))
-                inventory.save()
-            except Inventory.DoesNotExist:
-                pass  # If no inventory record exists, do nothing
+                    InventoryLogService().add_inventory_log(
+                        userprofile_id = None, #TODO
+                        product_id = product.id,
+                        store_id = store.id,
+                        stock = current_stock,
+                        action = ActionLog.MINUS,
+                        auto_generated_note = AutoNoteLog.DELETE_PURCHASE_ORDER,
+                        stock_before_action = current_stock,
+                        stock_after_action = inventory.in_stock,
+                    )
+                except Inventory.DoesNotExist:
+                    pass  # If no inventory record exists, do nothing
 
         purchase_order.delete()
 

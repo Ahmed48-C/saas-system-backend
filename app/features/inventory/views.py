@@ -39,6 +39,9 @@ def get_all_inventory(request):
 
 @api_view(['POST'])
 def create_inventory(request):
+    # TODO
+    request.data['userprofile'] = None # current error : AttributeError: 'AnonymousUser' object has no attribute 'userprofile'
+
     serializer = InventoryCreateUpdateSerializer(data=request.data)
 
     try:
@@ -57,6 +60,9 @@ def update_inventory(request, inventory_id):
         inventory = Inventory.objects.get(id=inventory_id)
     except Inventory.DoesNotExist:
         return Response({"detail": "Not Found."}, status=status.HTTP_404_NOT_FOUND)
+
+    # TODO
+    request.data['userprofile'] = None # current error : AttributeError: 'AnonymousUser' object has no attribute 'userprofile'
 
     serializer = InventoryCreateUpdateSerializer(inventory, data=request.data)
     serializer.is_valid(raise_exception=True)  # Raise exception on validation failure
