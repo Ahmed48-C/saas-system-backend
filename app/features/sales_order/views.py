@@ -106,7 +106,8 @@ def create_sales_order(request):
     serializer = SalesOrderCreateUpdateSerializer(data=request.data)
     if serializer.is_valid():
         serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response({}, status=status.HTTP_201_CREATED)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -129,7 +130,8 @@ def update_sales_order(request, sales_order_id):
     updated_sales_order = serializer.save()
 
     # Return the updated sales order data in the response
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    # return Response(serializer.data, status=status.HTTP_200_OK)
+    return Response({}, status=status.HTTP_200_OK)
 
 
 @api_view(['DELETE'])
