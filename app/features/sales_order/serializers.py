@@ -5,6 +5,8 @@ from app.features.inventory.models import Inventory
 from app.features.balance.models import Balance
 from app.features.inventory_log.services import InventoryLogService
 from app.features.inventory_log.models import ActionLog, AutoNoteLog
+from app.features.sales_order_delivery.models import SalesOrderDelivery
+from app.features.courier.models import Courier
 
 
 class SalesItemSerializer(serializers.ModelSerializer):
@@ -43,6 +45,10 @@ class SalesItemGetSingleSerializer(serializers.ModelSerializer):
 
 class GetSingleSalesOrderSerializer(serializers.ModelSerializer):
     items = SalesItemGetSingleSerializer(many=True)  # Include the nested items serializer
+    courier_id = serializers.PrimaryKeyRelatedField(queryset=Courier.objects.all(), source='delivery.courier.id', allow_null=True, required=False)
+    tracking_number = serializers.CharField(source='delivery.tracking_number', allow_null=True, required=False)
+    delivery_cost = serializers.IntegerField(source='delivery.delivery_cost', required=False)
+
 
     class Meta:
         model = SalesOrder
@@ -57,6 +63,10 @@ class GetSingleSalesOrderSerializer(serializers.ModelSerializer):
             'customer_id',
             'client_id',
             'items',  # Add the nested items field here
+
+            'delivery_cost',
+            'tracking_number',
+            'courier_id',
         ]
 
 
@@ -118,6 +128,12 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
     client_id = serializers.CharField(max_length=10)
     items = SalesItemCreateUpdateSerializer(many=True)
 
+    delivery_cost = serializers.CharField(max_length=50)
+    # delivery_cost = serializers.CharField(source='delivery.delivery_cost', allow_null=False, required=True)
+
+    tracking_number = serializers.CharField(max_length=100)
+    courier_id = serializers.CharField(max_length=10)
+
     class Meta:
         model = SalesOrder
         fields = [
@@ -128,7 +144,11 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
             'balance_id',
             'customer_id',
             'client_id',
-            'items'
+            'items',
+
+            'delivery_cost',
+            'tracking_number',
+            'courier_id',
         ]
 
     def _update_sales_items(self, sales_order, items_data):
@@ -154,6 +174,12 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         balance_id = validated_data.get('balance_id')
         customer_id = validated_data.get('customer_id')
         client_id = validated_data.get('client_id')
+
+        delivery_data = {
+            'delivery_cost': validated_data.get('delivery_cost', None),
+            'tracking_number': validated_data.get('tracking_number', None),
+            'courier_id': validated_data.get('courier_id', None),
+        }
 
         # Fetch the balance associated with the balance_id
         try:
@@ -224,6 +250,9 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
             balance.amount += total
             balance.save()
 
+        if any(delivery_data.values()):  # Only create delivery if data is provided
+            SalesOrderDelivery.objects.create(sales_order=sales_order, **delivery_data)
+
         return sales_order
 
 
@@ -245,6 +274,12 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         original_customer = instance.customer
         original_client = instance.client
         original_items = list(instance.items.all())  # Retrieve original items for inventory adjustment
+
+        delivery_data = {
+            'delivery_cost': validated_data.pop('delivery_cost', None),
+            'tracking_number': validated_data.pop('tracking_number', None),
+            'courier_id': validated_data.pop('courier_id', None),
+        }
 
         # Fetch the balance associated with the balance_id
         try:
@@ -307,5 +342,15 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
 
         # Update the SalesItem(s) related to this SalesOrder
         self._update_sales_items(instance, items_data)
+
+        # Update or create SalesOrderDelivery
+        if any(delivery_data.values()):  # Check if delivery fields are provided
+            if hasattr(instance, 'delivery'):
+                for attr, value in delivery_data.items():
+                    setattr(instance.delivery, attr, value)
+                instance.delivery.save()
+            else:
+                SalesOrderDelivery.objects.create(sales_order=instance, **delivery_data)
+
 
         return instance
