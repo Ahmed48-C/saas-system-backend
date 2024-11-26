@@ -3,6 +3,7 @@ from django.utils import timezone
 from app.features.store.models import Store
 from app.features.product.models import Product
 from app.features.userprofile.models import UserProfile
+from app.features.inventory_log.querymanagers import InventoryLogQueryManager
 # Create your models here.
 
 class ActionLog(models.TextChoices):
@@ -34,6 +35,8 @@ class InventoryLog(models.Model):
     stock = models.IntegerField(max_length=80, blank=True, null=True)
     stock_before_action = models.IntegerField(max_length=80, blank=True, null=True)
     stock_after_action = models.IntegerField(max_length=80, blank=True, null=True)
+
+    objects = InventoryLogQueryManager()
 
     def __str__(self):
         return str(self.action) + " - " + str(self.action_date)

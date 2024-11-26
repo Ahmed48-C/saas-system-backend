@@ -39,6 +39,7 @@ urlpatterns = [
     path('api/', include('app.features.sales_order.urls')),
     path('api/', include('app.features.courier.urls')),
     path('api/', include('app.features.client.urls')),
+    path('api/', include('app.features.inventory_log.urls')),
 
     # Token api using 'POST' request
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
