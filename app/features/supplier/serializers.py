@@ -1,7 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 from app.features.supplier.models import Supplier
-
+import re
 
 
 class GetSingleSupplierSerializer(serializers.ModelSerializer):
@@ -60,3 +60,22 @@ class SupplierCreateUpdateSerializer(serializers.ModelSerializer):
             # 'operator_id',
             'location_id',
         ]
+
+    def validate_phone(self, value):
+        """
+        Validate the main phone number field.
+        """
+        phone_regex = re.compile(r"^[+]*[(]{0,1}[0-9]{1,3}[)]{0,1}[-\s\./0-9]*$")
+        if not phone_regex.match(value):
+            raise serializers.ValidationError("Enter a valid phone number.")
+        return value
+
+    def validate_contact_phone(self, value):
+        """
+        Validate the contact phone field only if it is provided.
+        """
+        if value:  # Check if the field is not empty
+            phone_regex = re.compile(r"^[+]*[(]{0,1}[0-9]{1,3}[)]{0,1}[-\s\./0-9]*$")
+            if not phone_regex.match(value):
+                raise serializers.ValidationError("Enter a valid contact phone number.")
+        return value
