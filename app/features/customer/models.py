@@ -7,7 +7,7 @@ from app.features.location.models import Location
 class Customer(models.Model):
     code = models.CharField(max_length=80)
     name = models.CharField(max_length=80)
-    phone = models.CharField(max_length=80, null=True, blank=True)
+    phone = models.CharField(max_length=15, null=True, blank=True)
     email = models.EmailField(max_length=254, null=True, blank=True)
 
     operator = models.ForeignKey(Operator, on_delete=models.PROTECT, null=True, blank=True)

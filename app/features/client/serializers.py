@@ -1,6 +1,7 @@
 from django.utils import timezone
 from rest_framework import serializers
 from app.features.client.models import Client
+import re
 
 
 class GetSingleClientSerializer(serializers.ModelSerializer):
@@ -31,3 +32,12 @@ class ClientCreateUpdateSerializer(serializers.ModelSerializer):
             'share_percentage',
             'is_active',
         ]
+    
+    def validate_phone(self, value):
+        """
+        Validate the phone number field.
+        """
+        phone_regex = re.compile(r"^[+]*[(]{0,1}[0-9]{1,3}[)]{0,1}[-\s\./0-9]*$")
+        if not phone_regex.match(value):
+            raise serializers.ValidationError("Enter a valid phone number.")
+        return value
