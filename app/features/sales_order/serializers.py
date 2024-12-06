@@ -128,11 +128,14 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
     client_id = serializers.CharField(max_length=10)
     items = SalesItemCreateUpdateSerializer(many=True)
 
-    delivery_cost = serializers.CharField(max_length=50)
+    delivery_cost = serializers.CharField(max_length=50, required=False, allow_null=True)
     # delivery_cost = serializers.CharField(source='delivery.delivery_cost', allow_null=False, required=True)
 
-    tracking_number = serializers.CharField(max_length=100)
-    courier_id = serializers.CharField(max_length=10)
+    tracking_number = serializers.CharField(max_length=100, required=False, allow_null=True)
+    courier_id = serializers.CharField(max_length=10, required=False, allow_null=True)
+
+    # Define isDeliveryOrder as a write-only field
+    isDeliveryOrder = serializers.BooleanField(write_only=True, required=False, default=False)
 
     class Meta:
         model = SalesOrder
@@ -149,6 +152,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
             'delivery_cost',
             'tracking_number',
             'courier_id',
+            'isDeliveryOrder',  # Include it in the fields list
         ]
 
     def _update_sales_items(self, sales_order, items_data):
@@ -174,6 +178,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         balance_id = validated_data.get('balance_id')
         customer_id = validated_data.get('customer_id')
         client_id = validated_data.get('client_id')
+        isDeliveryOrder = validated_data.pop('isDeliveryOrder', False)  # Default to False if not provided
 
         delivery_data = {
             'delivery_cost': validated_data.get('delivery_cost', None),
@@ -250,8 +255,13 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
             balance.amount += total
             balance.save()
 
-        if any(delivery_data.values()):  # Only create delivery if data is provided
-            SalesOrderDelivery.objects.create(sales_order=sales_order, **delivery_data)
+        # if any(delivery_data.values()):  # Only create delivery if data is provided
+        #     SalesOrderDelivery.objects.create(sales_order=sales_order, **delivery_data)
+        if isDeliveryOrder:
+            if any(delivery_data.values()):  # Ensure delivery data is provided
+                SalesOrderDelivery.objects.create(sales_order=sales_order, **delivery_data)
+            else:
+                raise serializers.ValidationError({"delivery": "Delivery data is required for a delivery order."})
 
         return sales_order
 
@@ -267,6 +277,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         balance_id = validated_data.get('balance_id')
         customer_id = validated_data.get('customer_id')
         client_id = validated_data.get('client_id')
+        isDeliveryOrder = validated_data.pop('isDeliveryOrder', False)  # Default to False if not provided
 
         original_status = instance.status
         original_total = instance.total
@@ -344,13 +355,23 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         self._update_sales_items(instance, items_data)
 
         # Update or create SalesOrderDelivery
-        if any(delivery_data.values()):  # Check if delivery fields are provided
-            if hasattr(instance, 'delivery'):
-                for attr, value in delivery_data.items():
-                    setattr(instance.delivery, attr, value)
-                instance.delivery.save()
+        # if any(delivery_data.values()):  # Check if delivery fields are provided
+        #     if hasattr(instance, 'delivery'):
+        #         for attr, value in delivery_data.items():
+        #             setattr(instance.delivery, attr, value)
+        #         instance.delivery.save()
+        #     else:
+        #         SalesOrderDelivery.objects.create(sales_order=instance, **delivery_data)
+        if isDeliveryOrder:
+            if any(delivery_data.values()):  # Check if delivery fields are provided
+                if hasattr(instance, 'delivery'):
+                    for attr, value in delivery_data.items():
+                        setattr(instance.delivery, attr, value)
+                    instance.delivery.save()
+                else:
+                    SalesOrderDelivery.objects.create(sales_order=instance, **delivery_data)
             else:
-                SalesOrderDelivery.objects.create(sales_order=instance, **delivery_data)
+                raise serializers.ValidationError({"delivery": "Delivery data is required for a delivery order."})
 
 
         return instance
