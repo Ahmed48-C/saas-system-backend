@@ -7,6 +7,10 @@ from app.features.inventory_log.services import InventoryLogService
 from app.features.inventory_log.models import ActionLog, AutoNoteLog
 from app.features.sales_order_delivery.models import SalesOrderDelivery
 from app.features.courier.models import Courier
+from app.features.client.models import Client
+from app.features.client_balance.models import ClientBalance
+from django.utils.timezone import now
+from decimal import Decimal
 
 
 class SalesItemSerializer(serializers.ModelSerializer):
@@ -186,6 +190,14 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
             'courier_id': validated_data.get('courier_id', None),
         }
 
+        # Fetch the client and their share percentage
+        try:
+            client = Client.objects.get(id=client_id)
+        except Client.DoesNotExist:
+            raise serializers.ValidationError({"client": "Client not found."})
+
+        share_percentage = Decimal(client.share_percentage) / Decimal(100)  # Convert to a fraction (e.g., 10% => 0.1)
+
         # Fetch the balance associated with the balance_id
         try:
             balance = Balance.objects.get(id=balance_id)
@@ -251,6 +263,20 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     pass
 
         if status_order.upper() == "COMPLETED":
+            # Deduct client's share from the total
+            client_share = total * share_percentage
+            total -= client_share
+
+            # Update or create the ClientBalance
+            client_balance, created = ClientBalance.objects.get_or_create(
+                client=client,
+                defaults={'amount': client_share, 'last_updated_at': now()}
+            )
+            if not created:
+                client_balance.amount += client_share
+                client_balance.last_updated_at = now()
+                client_balance.save()
+
             # 1 - Add payment amount to balance
             balance.amount += total
             balance.save()
@@ -292,6 +318,14 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
             'courier_id': validated_data.pop('courier_id', None),
         }
 
+        # Fetch the client and their share percentage
+        try:
+            client = Client.objects.get(id=client_id)
+        except Client.DoesNotExist:
+            raise serializers.ValidationError({"client": "Client not found."})
+
+        share_percentage = Decimal(client.share_percentage) / Decimal(100)  # Convert to fraction (e.g., 10% => 0.1)
+
         # Fetch the balance associated with the balance_id
         try:
             balance = Balance.objects.get(id=balance_id)
@@ -300,11 +334,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
 
         if original_status_order.upper() == "PENDING" and updated_status.upper() == "COMPLETED":
 
-            # 1 - Add payment amount to balance
-            balance.amount += updated_total
-            balance.save()
-
-            # 2 - Reduce inventory stock for the sold product
+            # 1 - Reduce inventory stock for the sold product
             for item in items_data:
                 try:
                     inventory = Inventory.objects.get(
@@ -342,6 +372,24 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
 
                 except Inventory.DoesNotExist:
                     pass
+
+            # 2 - Deduct the client's share from the total
+            client_share = updated_total * share_percentage
+            updated_total -= client_share
+
+            # 4 - Update or create ClientBalance
+            client_balance, created = ClientBalance.objects.get_or_create(
+                client=client,
+                defaults={'amount': client_share, 'last_updated_at': now()}
+            )
+            if not created:
+                client_balance.amount += client_share
+                client_balance.last_updated_at = now()
+                client_balance.save()
+
+            # 3 - Add payment amount to balance
+                balance.amount += updated_total
+                balance.save()
 
         instance.total = updated_total
         instance.status = updated_status

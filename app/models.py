@@ -18,3 +18,4 @@ from app.features.courier.models import Courier
 from app.features.client.models import Client
 from app.features.sales_order_delivery.models import SalesOrderDelivery
 from app.features.inventory_log.models import InventoryLog
+from app.features.client_balance.models import ClientBalance
