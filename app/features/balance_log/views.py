@@ -45,25 +45,34 @@ def get_all_balance_log(request):
 #     serializer.save()
 #     return Response(serializer.data)
 
+# @api_view(['POST'])
+# def create_balance_log(request):
+#     serializer = BalanceLogCreateUpdateSerializer(data=request.data)
+#     serializer.is_valid(raise_exception=True)
+
+#     # Save the BalanceLog entry
+#     balance_log = serializer.save()
+
+#     # Check if the action is 'add' and update the Balance
+#     if balance_log.action == 'Add' and balance_log.balance:
+#         balance = balance_log.balance
+#         balance.amount += balance_log.amount  # Add the amount to the current balance
+#         balance.save()  # Save the updated balance
+#     elif balance_log.action == 'Subtract' and balance_log.balance:
+#         balance = balance_log.balance
+#         balance.amount -= balance_log.amount  # Add the amount to the current balance
+#         balance.save()  # Save the updated balance
+
+#     return Response(serializer.data)
+
+
 @api_view(['POST'])
 def create_balance_log(request):
     serializer = BalanceLogCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-
-    # Save the BalanceLog entry
     balance_log = serializer.save()
-
-    # Check if the action is 'add' and update the Balance
-    if balance_log.action == 'Add' and balance_log.balance:
-        balance = balance_log.balance
-        balance.amount += balance_log.amount  # Add the amount to the current balance
-        balance.save()  # Save the updated balance
-    elif balance_log.action == 'Subtract' and balance_log.balance:
-        balance = balance_log.balance
-        balance.amount -= balance_log.amount  # Add the amount to the current balance
-        balance.save()  # Save the updated balance
-
     return Response(serializer.data)
+
 
 @api_view(['PUT'])
 def update_balance_log(request, balance_log_id):

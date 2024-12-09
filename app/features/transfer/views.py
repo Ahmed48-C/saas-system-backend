@@ -39,48 +39,57 @@ def get_all_transfer(request):
     return Response(json_obj)
 
 
+# @api_view(['POST'])
+# @transaction.atomic  # Ensure that both balance changes are done atomically
+# def create_transfer(request):
+#     serializer = TransferCreateUpdateSerializer(data=request.data)
+#     serializer.is_valid(raise_exception=True)
+
+#     # Extract validated data
+#     balance_from_id = serializer.validated_data.get('balance_from_id')
+#     balance_to_id = serializer.validated_data.get('balance_to_id')
+#     amount = serializer.validated_data.get('amount')
+
+#     # Add validation to prevent transferring 0$
+#     if amount <= 0:
+#         return Response({"detail": "Amount must be greater than 0."}, status=status.HTTP_400_BAD_REQUEST)
+
+#     try:
+#         # Check if balance_from and balance_to are the same
+#         if balance_from_id == balance_to_id:
+#             return Response({"detail": "balance_from and balance_to cannot be the same."}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # Fetch balances for balance_from and balance_to
+#         balance_from = Balance.objects.get(id=balance_from_id)
+#         balance_to = Balance.objects.get(id=balance_to_id)
+
+#         # Ensure both balances exist and the transfer amount is valid
+#         if balance_from.amount < amount:
+#             return Response({"detail": "Insufficient balance in balance_from."}, status=status.HTTP_400_BAD_REQUEST)
+
+#         # Perform the transfer: Deduct from balance_from and add to balance_to
+#         balance_from.amount -= amount
+#         balance_to.amount += amount
+
+#         # Save both balances after modification
+#         balance_from.save()
+#         balance_to.save()
+
+#         # Save the Transfer entry
+#         transfer = serializer.save(balance_from=balance_from, balance_to=balance_to)
+
+#     except Balance.DoesNotExist:
+#         return Response({"detail": "Balance not found."}, status=status.HTTP_404_NOT_FOUND)
+
+#     return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
 @api_view(['POST'])
-@transaction.atomic  # Ensure that both balance changes are done atomically
+@transaction.atomic  # Ensure atomicity of the operation
 def create_transfer(request):
     serializer = TransferCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
-
-    # Extract validated data
-    balance_from_id = serializer.validated_data.get('balance_from_id')
-    balance_to_id = serializer.validated_data.get('balance_to_id')
-    amount = serializer.validated_data.get('amount')
-
-    # Add validation to prevent transferring 0$
-    if amount <= 0:
-        return Response({"detail": "Amount must be greater than 0."}, status=status.HTTP_400_BAD_REQUEST)
-
-    try:
-        # Check if balance_from and balance_to are the same
-        if balance_from_id == balance_to_id:
-            return Response({"detail": "balance_from and balance_to cannot be the same."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Fetch balances for balance_from and balance_to
-        balance_from = Balance.objects.get(id=balance_from_id)
-        balance_to = Balance.objects.get(id=balance_to_id)
-
-        # Ensure both balances exist and the transfer amount is valid
-        if balance_from.amount < amount:
-            return Response({"detail": "Insufficient balance in balance_from."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # Perform the transfer: Deduct from balance_from and add to balance_to
-        balance_from.amount -= amount
-        balance_to.amount += amount
-
-        # Save both balances after modification
-        balance_from.save()
-        balance_to.save()
-
-        # Save the Transfer entry
-        transfer = serializer.save(balance_from=balance_from, balance_to=balance_to)
-
-    except Balance.DoesNotExist:
-        return Response({"detail": "Balance not found."}, status=status.HTTP_404_NOT_FOUND)
-
+    transfer = serializer.save()
     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
