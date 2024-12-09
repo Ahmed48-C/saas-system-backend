@@ -11,6 +11,7 @@ from app.features.client.models import Client
 from app.features.client_balance.models import ClientBalance
 from django.utils.timezone import now
 from decimal import Decimal
+from app.features.balance_history.models import ActionType, BalanceHistory
 
 
 class SalesItemSerializer(serializers.ModelSerializer):
@@ -278,8 +279,20 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                 client_balance.save()
 
             # 1 - Add payment amount to balance
+            previous_amount = balance.amount
             balance.amount += total
             balance.save()
+
+            # Create a BalanceHistory record
+            BalanceHistory.objects.create(
+                amount=total,
+                previous_amount=previous_amount,
+                current_amount=balance.amount,
+                balance=balance,
+                action=ActionType.DEPOSIT,
+                note="Sale Order Deposit",
+                transfer_date=timezone.now(),
+            )
 
         # if any(delivery_data.values()):  # Only create delivery if data is provided
         #     SalesOrderDelivery.objects.create(sales_order=sales_order, **delivery_data)
@@ -388,8 +401,20 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                 client_balance.save()
 
             # 3 - Add payment amount to balance
-                balance.amount += updated_total
-                balance.save()
+            previous_amount = balance.amount
+            balance.amount += updated_total
+            balance.save()
+
+            # Create a BalanceHistory record
+            BalanceHistory.objects.create(
+                amount=updated_total,
+                previous_amount=previous_amount,
+                current_amount=balance.amount,
+                balance=balance,
+                action=ActionType.DEPOSIT,
+                note="Sale Order Deposit",
+                transfer_date=timezone.now(),
+            )
 
         instance.total = updated_total
         instance.status = updated_status

@@ -5,6 +5,7 @@ from app.features.inventory.models import Inventory
 from app.features.balance.models import Balance
 from app.features.inventory_log.models import ActionLog, AutoNoteLog
 from app.features.inventory_log.services import InventoryLogService
+from app.features.balance_history.models import ActionType, BalanceHistory
 
 
 # class GetSinglePurchaseOrderSerializer(serializers.ModelSerializer):
@@ -221,6 +222,22 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     "detail": "The total amount exceeds the available balance. Please adjust the order or add funds."
                 })
+            
+            previous_amount = balance.amount
+            balance.amount -= total
+            balance.save()
+
+            # Create a BalanceHistory record
+            BalanceHistory.objects.create(
+                amount=total,
+                previous_amount=previous_amount,
+                current_amount=balance.amount,
+                balance=balance,
+                action=ActionType.WITHDRAW,
+                note="Purchase Order Withdraw",
+                transfer_date=timezone.now(),
+            )
+
 
             for item_data in items_data:
                 product_id = item_data.get('product_id')
@@ -286,8 +303,8 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     )
 
         # Deduct the total from the balance
-            balance.amount -= total
-            balance.save()
+            # balance.amount -= total
+            # balance.save()
 
         # Create the PurchaseOrder after inventory and balance updates
         purchase_order = PurchaseOrder.objects.create(
@@ -414,8 +431,24 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     "detail": "Insufficient balance to complete the update."
                 })
-            balance.amount -= balance_adjustment
+
+            previous_amount = balance.amount
+            balance.amount -= updated_total
             balance.save()
+
+            # Create a BalanceHistory record
+            BalanceHistory.objects.create(
+                amount=updated_total,
+                previous_amount=previous_amount,
+                current_amount=balance.amount,
+                balance=balance,
+                action=ActionType.WITHDRAW,
+                note="Purchase Order Withdraw",
+                transfer_date=timezone.now(),
+            )
+
+            # balance.amount -= balance_adjustment
+            # balance.save()
 
         # If changing from 'COMPLETED' to 'Pending', refund the balance
         if original_status.upper() == 'COMPLETED' and updated_status.upper() == 'PENDING':

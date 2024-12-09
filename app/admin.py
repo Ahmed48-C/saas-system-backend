@@ -19,3 +19,4 @@ from app.features.client.admin import ClientAdmin
 from app.features.sales_order_delivery.admin import SalesOrderDeliveryAdmin
 from app.features.inventory_log.admin import InventoryLogAdmin
 from app.features.client_balance.admin import ClientBalanceAdmin
+from app.features.balance_history.admin import BalanceHistoryAdmin
