@@ -341,7 +341,7 @@ def delete_purchase_order(request, purchase_order_id):
             # Adjust stock based on related PurchaseItems
             for item in purchase_order.items.all():
                 try:
-                    inventory = Inventory.objects.get(product=item.product, store=purchase_order.store, supplier=purchase_order.supplier)
+                    inventory = Inventory.objects.get(product=item.product, store=purchase_order.store)
                     # inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
                     inventory_in_stock = int(inventory.in_stock or 0)
                     # Adjust inventory stock
@@ -455,11 +455,10 @@ def delete_purchase_order_stock(request, purchase_order_id):
             for item in purchase_order.items.all():
                 product = item.product
                 store = purchase_order.store
-                supplier = purchase_order.supplier
                 quantity = item.quantity
 
                 try:
-                    inventory = Inventory.objects.get(product=product, store=store, supplier=supplier)
+                    inventory = Inventory.objects.get(product=product, store=store)
                     # inventory_in_stock = int(inventory.in_stock) if inventory.in_stock.isdigit() else 0
                     inventory_in_stock = int(inventory.in_stock or 0)
                     current_stock = int(inventory.in_stock or 0)

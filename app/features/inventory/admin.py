@@ -16,5 +16,4 @@ class InventoryAdmin(admin.ModelAdmin):
         'operator',
         'store',
         'product',
-        'supplier'
     ]

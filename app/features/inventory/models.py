@@ -3,7 +3,6 @@ from app.features.inventory.querymanagers import InventoryQueryManager
 from app.features.operator.models import Operator
 from app.features.store.models import Store
 from app.features.product.models import Product
-from app.features.supplier.models import Supplier
 # Create your models here.
 
 class Inventory(models.Model):
@@ -16,7 +15,6 @@ class Inventory(models.Model):
     operator = models.ForeignKey(Operator, on_delete=models.PROTECT, null=True, blank=True)
     store = models.ForeignKey(Store, on_delete=models.PROTECT, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.PROTECT, null=True, blank=True)
-    supplier = models.ForeignKey(Supplier, on_delete=models.PROTECT, null=True, blank=True)
 
     objects = InventoryQueryManager()
 
@@ -24,7 +22,7 @@ class Inventory(models.Model):
         return str(self.in_stock)
 
     class Meta:
-        unique_together = ('product', 'store', 'supplier')
+        unique_together = ('product', 'store')
         constraints = [
-            models.UniqueConstraint(fields=['product', 'store', 'supplier'], name='unique_product_store_supplier')
+            models.UniqueConstraint(fields=['product', 'store'], name='unique_product_store')
         ]
