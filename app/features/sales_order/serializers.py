@@ -353,6 +353,11 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         # Track the original status of the order
         original_status_order = instance.status
 
+        if original_status_order.upper() in {"COMPLETED", "CANCELLED"}:
+            raise serializers.ValidationError({
+                "status": f"Cannot edit a sales order that is {original_status_order.upper()}."
+            })
+
         items_data = validated_data.pop('items')
         updated_status = validated_data.get('status')
         updated_total = validated_data.get('total')
@@ -389,7 +394,8 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         except Balance.DoesNotExist:
             raise serializers.ValidationError({"balance": "Balance not found."})
 
-        if original_status_order.upper() == "PENDING" and updated_status.upper() == "COMPLETED":
+        # if original_status_order.upper() == "PENDING" and updated_status.upper() == "COMPLETED":
+        if original_status_order.upper() in {"PENDING", "DELIVERY"} and updated_status.upper() == "COMPLETED":
             inventory_updates = []  # Temporary storage for validated inventory updates
 
             # 1 - Reduce inventory stock for the sold product

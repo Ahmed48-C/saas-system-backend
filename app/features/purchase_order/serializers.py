@@ -212,28 +212,14 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                 raise serializers.ValidationError({
                     "detail": "The total amount exceeds the available balance. Please adjust the order or add funds."
                 })
-            
-            previous_amount = balance.amount
-            balance.amount -= total
-            balance.save()
 
-            # Create a BalanceHistory record
-            BalanceHistory.objects.create(
-                amount=total,
-                previous_amount=previous_amount,
-                current_amount=balance.amount,
-                balance=balance,
-                action=ActionType.WITHDRAW,
-                note="Purchase Order Withdraw",
-                transfer_date=timezone.now(),
-            )
-
+            inventory_updates = []  # Temporary storage for validated inventory updates
 
             for item_data in items_data:
-                product_id = item_data.get('product_id')
-                quantity = item_data.get('quantity')
-
                 try:
+                    product_id = item_data.get('product_id')
+                    quantity = item_data.get('quantity')
+
                     inventory = Inventory.objects.get(
                         product=product_id,
                         store=store_id,
@@ -250,6 +236,8 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                             raise serializers.ValidationError({
                                 "detail": f"Cannot add {quantity} to inventory. Maximum stock level of {max_stock} would be exceeded."
                             })
+                    
+                    inventory_updates.append((inventory, new_in_stock))
 
                     # # Deduct the total from the balance
                     # balance.amount -= total
@@ -257,10 +245,44 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
 
 
                     # Save new_in_stock back as string
-                    inventory.in_stock = str(new_in_stock)
-                    inventory.save()
+                    # inventory.in_stock = str(new_in_stock)
+                    # inventory.save()
 
-                    InventoryLogService().add_inventory_log(
+                    # InventoryLogService().add_inventory_log(
+                    #     userprofile_id = None, #TODO
+                    #     product_id = product_id,
+                    #     store_id=store_id,
+                    #     stock = inventory_in_stock,
+                    #     action = ActionLog.ADD,
+                    #     auto_generated_note = AutoNoteLog.NEW_PURCHASE_ORDER,
+                    #     stock_before_action = inventory_in_stock,
+                    #     stock_after_action = new_in_stock,
+                    # )
+
+                except Inventory.DoesNotExist:
+                    # Create new inventory if it does not exist
+                    Inventory.objects.create(
+                        in_stock=str(quantity),  # Save as string
+                        product_id=product_id,
+                        store_id=store_id,
+                        # code=validated_data.get('code')
+                    )
+                    # InventoryLogService().add_inventory_log(
+                    #     userprofile_id = None, #TODO
+                    #     product_id = product_id,
+                    #     store_id=store_id,
+                    #     stock = 0,
+                    #     action = ActionLog.NEW_PRODUCT,
+                    #     auto_generated_note = AutoNoteLog.NEW_PRODUCT,
+                    #     stock_before_action = 0,
+                    #     stock_after_action = int(quantity),
+                    # )
+
+            for inventory, new_in_stock in inventory_updates:
+                inventory.in_stock = new_in_stock
+                inventory.save()
+
+                InventoryLogService().add_inventory_log(
                         userprofile_id = None, #TODO
                         product_id = product_id,
                         store_id=store_id,
@@ -271,24 +293,20 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                         stock_after_action = new_in_stock,
                     )
 
-                except Inventory.DoesNotExist:
-                    # Create new inventory if it does not exist
-                    Inventory.objects.create(
-                        in_stock=str(quantity),  # Save as string
-                        product_id=product_id,
-                        store_id=store_id,
-                        # code=validated_data.get('code')
-                    )
-                    InventoryLogService().add_inventory_log(
-                        userprofile_id = None, #TODO
-                        product_id = product_id,
-                        store_id=store_id,
-                        stock = 0,
-                        action = ActionLog.NEW_PRODUCT,
-                        auto_generated_note = AutoNoteLog.NEW_PRODUCT,
-                        stock_before_action = 0,
-                        stock_after_action = int(quantity),
-                    )
+            previous_amount = balance.amount
+            balance.amount -= total
+            balance.save()
+
+            # Create a BalanceHistory record
+            BalanceHistory.objects.create(
+                amount=total,
+                previous_amount=previous_amount,
+                current_amount=balance.amount,
+                balance=balance,
+                action=ActionType.WITHDRAW,
+                note="Purchase Order Withdraw",
+                transfer_date=timezone.now(),
+            )
 
         # Deduct the total from the balance
             # balance.amount -= total
@@ -402,6 +420,11 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         original_store = instance.store
         original_items = list(instance.items.all())  # Retrieve original items for inventory adjustment
 
+        if original_status.upper() == 'COMPLETED':
+            raise serializers.ValidationError({
+                "status": f"Cannot edit a sales order that is {original_status.upper()}."
+            })
+
         # Fetch the balance associated with the balance_id
         try:
             balance = Balance.objects.get(id=balance_id)
@@ -409,31 +432,31 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"balance": "Balance not found."})
 
         # Balance adjustment based on status change
-        if original_status.upper() == 'PENDING' and updated_status.upper() == 'COMPLETED':
-            # Deduct the updated total from the balance
-            balance_adjustment = updated_total
-            if balance.amount - balance_adjustment < 0:
-                raise serializers.ValidationError({
-                    "detail": "Insufficient balance to complete the update."
-                })
+        # if original_status.upper() == 'PENDING' and updated_status.upper() == 'COMPLETED':
+        #     # Deduct the updated total from the balance
+        #     balance_adjustment = updated_total
+        #     if balance.amount - balance_adjustment < 0:
+        #         raise serializers.ValidationError({
+        #             "detail": "Insufficient balance to complete the update."
+        #         })
 
-            previous_amount = balance.amount
-            balance.amount -= updated_total
-            balance.save()
+        #     previous_amount = balance.amount
+        #     balance.amount -= updated_total
+        #     balance.save()
 
-            # Create a BalanceHistory record
-            BalanceHistory.objects.create(
-                amount=updated_total,
-                previous_amount=previous_amount,
-                current_amount=balance.amount,
-                balance=balance,
-                action=ActionType.WITHDRAW,
-                note="Purchase Order Withdraw",
-                transfer_date=timezone.now(),
-            )
+        #     # Create a BalanceHistory record
+        #     BalanceHistory.objects.create(
+        #         amount=updated_total,
+        #         previous_amount=previous_amount,
+        #         current_amount=balance.amount,
+        #         balance=balance,
+        #         action=ActionType.WITHDRAW,
+        #         note="Purchase Order Withdraw",
+        #         transfer_date=timezone.now(),
+        #     )
 
-            # balance.amount -= balance_adjustment
-            # balance.save()
+        #     # balance.amount -= balance_adjustment
+        #     # balance.save()
 
         # If changing from 'COMPLETED' to 'Pending', refund the balance
         if original_status.upper() == 'COMPLETED' and updated_status.upper() == 'PENDING':
@@ -453,7 +476,7 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         # Update inventory based on status changes
         if original_status.upper() == 'PENDING' and updated_status.upper() == 'COMPLETED':
             # self._update_inventory_on_completion(items_data, updated_store_id, validated_data.get('code'))
-            self._update_inventory_on_completion(items_data, updated_store_id)
+            self._update_inventory_on_completion(items_data, updated_store_id, balance, updated_total)
         elif original_status.upper() == 'COMPLETED' and updated_status.upper() == 'PENDING':
             self._revert_inventory_on_pending(original_items, original_store)
         elif original_status.upper() == 'COMPLETED' and updated_status.upper() == 'COMPLETED':
@@ -473,7 +496,15 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
-    def _update_inventory_on_completion(self, items_data, store_id):
+    def _update_inventory_on_completion(self, items_data, store_id, balance, updated_total):
+        inventory_updates = []  # Temporary storage for validated inventory updates
+
+        balance_adjustment = updated_total
+        if balance.amount - balance_adjustment < 0:
+            raise serializers.ValidationError({
+                "detail": "Insufficient balance to complete the update."
+            })
+
         for item_data in items_data:
             product_id = item_data.get('product_id')
             quantity = item_data.get('quantity')
@@ -490,19 +521,21 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                             "detail": f"Cannot add {quantity} to inventory. Maximum stock level of {max_stock} would be exceeded."
                         })
 
-                inventory.in_stock = new_in_stock
-                inventory.save()
+                # inventory.in_stock = new_in_stock
+                # inventory.save()
 
-                InventoryLogService().add_inventory_log(
-                    userprofile_id = None, #TODO
-                    product_id = product_id,
-                    store_id=store_id,
-                    stock = inventory_in_stock,
-                    action = ActionLog.ADD,
-                    auto_generated_note = AutoNoteLog.NEW_PURCHASE_ORDER,
-                    stock_before_action = inventory_in_stock,
-                    stock_after_action = new_in_stock,
-                )
+                inventory_updates.append((inventory, new_in_stock))
+
+                # InventoryLogService().add_inventory_log(
+                #     userprofile_id = None, #TODO
+                #     product_id = product_id,
+                #     store_id=store_id,
+                #     stock = inventory_in_stock,
+                #     action = ActionLog.ADD,
+                #     auto_generated_note = AutoNoteLog.NEW_PURCHASE_ORDER,
+                #     stock_before_action = inventory_in_stock,
+                #     stock_after_action = new_in_stock,
+                # )
 
             except Inventory.DoesNotExist:
                 Inventory.objects.create(
@@ -511,15 +544,45 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     store_id=store_id,
                     # code=code
                 )
-                InventoryLogService().add_inventory_log(
+                # InventoryLogService().add_inventory_log(
+                #     userprofile_id = None, #TODO
+                #     product_id = product_id,
+                #     store_id=store_id,
+                #     stock = 0,
+                #     action = ActionLog.NEW_PRODUCT,
+                #     auto_generated_note = AutoNoteLog.NEW_PRODUCT,
+                #     stock_before_action = 0,
+                #     stock_after_action = int(quantity),
+                # )
+
+        previous_amount = balance.amount
+        balance.amount -= updated_total
+        balance.save()
+
+        # Create a BalanceHistory record
+        BalanceHistory.objects.create(
+            amount=updated_total,
+            previous_amount=previous_amount,
+            current_amount=balance.amount,
+            balance=balance,
+            action=ActionType.WITHDRAW,
+            note="Purchase Order Withdraw",
+            transfer_date=timezone.now(),
+        )
+
+        for inventory, new_in_stock in inventory_updates:
+            inventory.in_stock = new_in_stock
+            inventory.save()
+
+            InventoryLogService().add_inventory_log(
                     userprofile_id = None, #TODO
                     product_id = product_id,
                     store_id=store_id,
-                    stock = 0,
-                    action = ActionLog.NEW_PRODUCT,
-                    auto_generated_note = AutoNoteLog.NEW_PRODUCT,
-                    stock_before_action = 0,
-                    stock_after_action = int(quantity),
+                    stock = inventory_in_stock,
+                    action = ActionLog.ADD,
+                    auto_generated_note = AutoNoteLog.NEW_PURCHASE_ORDER,
+                    stock_before_action = inventory_in_stock,
+                    stock_after_action = new_in_stock,
                 )
 
     def _revert_inventory_on_pending(self, original_items, store):
