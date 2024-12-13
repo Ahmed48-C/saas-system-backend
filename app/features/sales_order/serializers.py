@@ -206,33 +206,39 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"balance": "Balance not found."})
 
         # Create the SalesOrder after inventory and balance updates
-        sales_order = SalesOrder.objects.create(
-            code=validated_data['code'],
-            total=total,
-            status=status_order,
-            store_id=store_id,
-            balance_id=balance_id,
-            customer_id=customer_id,
-            client_id=client_id
-        )
+        # sales_order = SalesOrder.objects.create(
+        #     code=validated_data['code'],
+        #     total=total,
+        #     status=status_order,
+        #     store_id=store_id,
+        #     balance_id=balance_id,
+        #     customer_id=customer_id,
+        #     client_id=client_id
+        # )
 
         # Create the SalesItem(s) for this SalesOrder
-        for item_data in items_data:
-            SalesItem.objects.create(
-                price=item_data['price'],
-                quantity=item_data['quantity'],
-                total=item_data['total'],
-                product_id=item_data['product_id'],
-                sales_order=sales_order
-            )
+        if status_order.upper() == "COMPLETED": #for item_data in items_data:
+            # SalesItem.objects.create(
+            #     price=item_data['price'],
+            #     quantity=item_data['quantity'],
+            #     total=item_data['total'],
+            #     product_id=item_data['product_id'],
+            #     sales_order=sales_order
+            # )
+            inventory_updates = []  # Temporary storage for validated inventory updates
 
-            if status_order.upper() == "COMPLETED":
+            for item_data in items_data: # if status_order.upper() == "COMPLETED":
                 # 2 - Reduce inventory stock for the sold product
                 try:
                     inventory = Inventory.objects.get(product=item_data['product_id'], store=store_id)
                     inventory_in_stock = int(inventory.in_stock) if inventory.in_stock else 0
                     new_quantity = int(item_data.get('quantity', 0))
                     new_in_stock = inventory_in_stock - new_quantity
+
+                    if new_in_stock < 0:
+                        raise serializers.ValidationError({
+                            "detail": f"Cannot deduct from inventory. Not enough stock available for product {item_data['product_id']}."
+                        })
 
                     if inventory.min_stock:
                         min_stock = int(inventory.min_stock)
@@ -241,19 +247,22 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                                 "detail": f"Cannot deduct from inventory. Minimum stock level of {min_stock} would be reached."
                             })
 
-                    inventory.in_stock = new_in_stock
-                    inventory.save()
+                    # inventory.in_stock = new_in_stock
+                    # inventory.save()
+                    
+                    # Save validated changes in a temporary list
+                    inventory_updates.append((inventory, new_in_stock))
 
-                    InventoryLogService().add_inventory_log(
-                        userprofile_id = None, #TODO
-                        product_id = item_data.get('product_id'),
-                        store_id = store_id,
-                        stock = inventory_in_stock,
-                        action = ActionLog.MINUS,
-                        auto_generated_note = AutoNoteLog.COMPLETED_SALES_ORDER,
-                        stock_before_action = inventory_in_stock,
-                        stock_after_action = new_in_stock,
-                    )
+                    # InventoryLogService().add_inventory_log(
+                    #     userprofile_id = None, #TODO
+                    #     product_id = item_data.get('product_id'),
+                    #     store_id = store_id,
+                    #     stock = inventory_in_stock,
+                    #     action = ActionLog.MINUS,
+                    #     auto_generated_note = AutoNoteLog.COMPLETED_SALES_ORDER,
+                    #     stock_before_action = inventory_in_stock,
+                    #     stock_after_action = new_in_stock,
+                    # )
 
                 except Inventory.DoesNotExist:
                     # Inventory.objects.create(
@@ -262,6 +271,22 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     #     store_id=store_id,
                     # )
                     pass
+                
+                # Apply all validated updates to inventory
+            for inventory, new_in_stock in inventory_updates:
+                inventory.in_stock = new_in_stock
+                inventory.save()
+
+                InventoryLogService().add_inventory_log(
+                    userprofile_id=None,  # TODO
+                    product_id=inventory.product_id,
+                    store_id=store_id,
+                    stock=inventory_in_stock,
+                    action=ActionLog.MINUS,
+                    auto_generated_note=AutoNoteLog.COMPLETED_SALES_ORDER,
+                    stock_before_action=inventory_in_stock,
+                    stock_after_action=new_in_stock,
+                )
 
         if status_order.upper() == "COMPLETED":
             # Deduct client's share from the total
@@ -293,9 +318,28 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                 note="Sale Order Deposit",
                 transfer_date=timezone.now(),
             )
+        
+        # If all validations and updates are successful, create the SalesOrder
+        sales_order = SalesOrder.objects.create(
+            code=validated_data['code'],
+            total=total,
+            status=status_order,
+            store_id=store_id,
+            balance_id=balance_id,
+            customer_id=customer_id,
+            client_id=client_id
+        )
 
-        # if any(delivery_data.values()):  # Only create delivery if data is provided
-        #     SalesOrderDelivery.objects.create(sales_order=sales_order, **delivery_data)
+        # Create the SalesItem(s) for this SalesOrder
+        for item_data in items_data:
+            SalesItem.objects.create(
+                price=item_data['price'],
+                quantity=item_data['quantity'],
+                total=item_data['total'],
+                product_id=item_data['product_id'],
+                sales_order=sales_order
+            )
+
         if isDeliveryOrder:
             if any(delivery_data.values()):  # Ensure delivery data is provided
                 SalesOrderDelivery.objects.create(sales_order=sales_order, **delivery_data)
@@ -346,6 +390,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError({"balance": "Balance not found."})
 
         if original_status_order.upper() == "PENDING" and updated_status.upper() == "COMPLETED":
+            inventory_updates = []  # Temporary storage for validated inventory updates
 
             # 1 - Reduce inventory stock for the sold product
             for item in items_data:
@@ -361,6 +406,11 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     inventory_in_stock = int(inventory.in_stock) if inventory.in_stock else 0
                     new_in_stock = inventory_in_stock - updated_quantity
 
+                    if new_in_stock < 0:
+                        raise serializers.ValidationError({
+                            "detail": f"Cannot deduct from inventory. Not enough stock available for product {item.get('product_id')}."
+                        })
+
                     # Ensure new stock doesn't exceed max stock
                     if inventory.min_stock:
                         min_stock = int(inventory.min_stock)
@@ -369,22 +419,40 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
                                 "detail": f"Cannot deduct from inventory. Minimum stock level of {min_stock} would be reached."
                             })
 
-                    inventory.in_stock = new_in_stock
-                    inventory.save()
+                    # inventory.in_stock = new_in_stock
+                    # inventory.save()
+                    # Save validated changes in a temporary list
+                    inventory_updates.append((inventory, new_in_stock))
 
-                    InventoryLogService().add_inventory_log(
-                        userprofile_id = None, #TODO
-                        product_id = item.get('product_id'),
-                        store_id = updated_store_id,
-                        stock = inventory_in_stock,
-                        action = ActionLog.MINUS,
-                        auto_generated_note = AutoNoteLog.COMPLETED_SALES_ORDER,
-                        stock_before_action = inventory_in_stock,
-                        stock_after_action = new_in_stock,
-                    )
+                    # InventoryLogService().add_inventory_log(
+                    #     userprofile_id = None, #TODO
+                    #     product_id = item.get('product_id'),
+                    #     store_id = updated_store_id,
+                    #     stock = inventory_in_stock,
+                    #     action = ActionLog.MINUS,
+                    #     auto_generated_note = AutoNoteLog.COMPLETED_SALES_ORDER,
+                    #     stock_before_action = inventory_in_stock,
+                    #     stock_after_action = new_in_stock,
+                    # )
 
                 except Inventory.DoesNotExist:
                     pass
+            
+            # Apply all validated updates to inventory
+            for inventory, new_in_stock in inventory_updates:
+                inventory.in_stock = new_in_stock
+                inventory.save()
+
+                InventoryLogService().add_inventory_log(
+                    userprofile_id=None,  # TODO
+                    product_id=inventory.product_id,
+                    store_id=updated_store_id,
+                    stock=inventory.in_stock,
+                    action=ActionLog.MINUS,
+                    auto_generated_note=AutoNoteLog.COMPLETED_SALES_ORDER,
+                    stock_before_action=inventory_in_stock,
+                    stock_after_action=new_in_stock,
+                )
 
             # 2 - Deduct the client's share from the total
             client_share = updated_total * share_percentage
@@ -427,14 +495,6 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         # Update the SalesItem(s) related to this SalesOrder
         self._update_sales_items(instance, items_data)
 
-        # Update or create SalesOrderDelivery
-        # if any(delivery_data.values()):  # Check if delivery fields are provided
-        #     if hasattr(instance, 'delivery'):
-        #         for attr, value in delivery_data.items():
-        #             setattr(instance.delivery, attr, value)
-        #         instance.delivery.save()
-        #     else:
-        #         SalesOrderDelivery.objects.create(sales_order=instance, **delivery_data)
         if isDeliveryOrder:
             if any(delivery_data.values()):  # Check if delivery fields are provided
                 if hasattr(instance, 'delivery'):
