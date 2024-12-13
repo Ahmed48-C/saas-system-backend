@@ -5,6 +5,7 @@ from app.features.product.views import (
     update_product,
     delete_product,
     get_product_by_id,
+    delete_products,
 )
 
 urlpatterns = [
@@ -13,4 +14,5 @@ urlpatterns = [
     path('post/product/', create_product),
     path('put/product/<product_id>/', update_product),
     path('delete/product/<product_id>/', delete_product),
+    path('delete/products/', delete_products),
 ]

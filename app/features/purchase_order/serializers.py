@@ -70,7 +70,6 @@ class GetSinglePurchaseOrderSerializer(serializers.ModelSerializer):
             'operator_id',
             'store_id',
             'balance_id',
-            'supplier_id',
             'items',  # Add the nested items field here
         ]
 
@@ -116,7 +115,6 @@ class PurchaseOrderGetAllSerializer(serializers.ModelSerializer):
     operator = serializers.SerializerMethodField('get_operator_name')
     store = serializers.SerializerMethodField('get_store_name')
     balance = serializers.SerializerMethodField('get_balance_name')
-    supplier = serializers.SerializerMethodField('get_supplier_name')
     items = PurchaseItemSerializer(many=True)  # Include the nested items serializer
 
     class Meta:
@@ -129,7 +127,6 @@ class PurchaseOrderGetAllSerializer(serializers.ModelSerializer):
             'operator',
             'store',
             'balance',
-            'supplier',
             'items',    # Add the nested items field
         ]
 
@@ -144,10 +141,6 @@ class PurchaseOrderGetAllSerializer(serializers.ModelSerializer):
     @staticmethod
     def get_balance_name(obj):
         return obj.balance and obj.balance.name
-
-    @staticmethod
-    def get_supplier_name(obj):
-        return obj.supplier and obj.supplier.name
 
 # class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
 #     # operator_id = serializers.CharField(max_length=10)
@@ -180,7 +173,6 @@ class PurchaseItemCreateUpdateSerializer(serializers.ModelSerializer):
 class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
     store_id = serializers.CharField(max_length=10)
     balance_id = serializers.CharField(max_length=10)
-    supplier_id = serializers.CharField(max_length=10)
     items = PurchaseItemCreateUpdateSerializer(many=True)
 
     class Meta:
@@ -191,7 +183,6 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
             'status',
             'store_id',
             'balance_id',
-            'supplier_id',
             'items'
         ]
 
@@ -202,7 +193,6 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         total = validated_data.get('total')
         store_id = validated_data.get('store_id')
         balance_id = validated_data.get('balance_id')
-        supplier_id = validated_data.get('supplier_id')
 
         # Fetch the balance associated with the balance_id
         try:
@@ -247,7 +237,6 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     inventory = Inventory.objects.get(
                         product=product_id,
                         store=store_id,
-                        supplier=supplier_id,
                     )
 
                     # Convert inventory.in_stock to integer if it's a string
@@ -288,7 +277,6 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                         in_stock=str(quantity),  # Save as string
                         product_id=product_id,
                         store_id=store_id,
-                        supplier_id=supplier_id,
                         # code=validated_data.get('code')
                     )
                     InventoryLogService().add_inventory_log(
@@ -312,8 +300,7 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
             total=total,
             status=status_order,
             store_id=store_id,
-            balance_id=balance_id,
-            supplier_id=supplier_id
+            balance_id=balance_id
         )
 
         # Create the PurchaseItem(s) for this PurchaseOrder
@@ -409,12 +396,10 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         updated_total = validated_data.get('total')
         updated_store_id = validated_data.get('store_id')
         balance_id = validated_data.get('balance_id')
-        supplier_id = validated_data.get('supplier_id')
 
         original_status = instance.status
         original_total = instance.total
         original_store = instance.store
-        original_supplier = instance.supplier
         original_items = list(instance.items.all())  # Retrieve original items for inventory adjustment
 
         # Fetch the balance associated with the balance_id
@@ -468,11 +453,11 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         # Update inventory based on status changes
         if original_status.upper() == 'PENDING' and updated_status.upper() == 'COMPLETED':
             # self._update_inventory_on_completion(items_data, updated_store_id, validated_data.get('code'))
-            self._update_inventory_on_completion(items_data, updated_store_id, supplier_id)
+            self._update_inventory_on_completion(items_data, updated_store_id)
         elif original_status.upper() == 'COMPLETED' and updated_status.upper() == 'PENDING':
-            self._revert_inventory_on_pending(original_items, original_store, original_supplier)
+            self._revert_inventory_on_pending(original_items, original_store)
         elif original_status.upper() == 'COMPLETED' and updated_status.upper() == 'COMPLETED':
-            self._adjust_inventory_on_update(original_items, items_data, original_store, updated_store_id, original_supplier, supplier_id)
+            self._adjust_inventory_on_update(original_items, items_data, original_store, updated_store_id)
 
         # Update the purchase order instance with the validated data
         # instance.code = validated_data.get('code', instance.code)
@@ -480,7 +465,6 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         instance.status = updated_status
         instance.store_id = updated_store_id
         instance.balance_id = balance_id
-        instance.supplier_id = supplier_id
         instance.save()
 
         # Update the PurchaseItem(s) related to this PurchaseOrder
@@ -489,13 +473,13 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
         return instance
 
 
-    def _update_inventory_on_completion(self, items_data, store_id, supplier_id):
+    def _update_inventory_on_completion(self, items_data, store_id):
         for item_data in items_data:
             product_id = item_data.get('product_id')
             quantity = item_data.get('quantity')
 
             try:
-                inventory = Inventory.objects.get(product=product_id, store=store_id, supplier=supplier_id)
+                inventory = Inventory.objects.get(product=product_id, store=store_id)
                 inventory_in_stock = int(inventory.in_stock) if inventory.in_stock else 0
                 new_in_stock = inventory_in_stock + quantity
 
@@ -525,7 +509,6 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     in_stock=str(quantity),
                     product_id=product_id,
                     store_id=store_id,
-                    supplier_id=supplier_id,
                     # code=code
                 )
                 InventoryLogService().add_inventory_log(
@@ -539,10 +522,10 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     stock_after_action = int(quantity),
                 )
 
-    def _revert_inventory_on_pending(self, original_items, store, supplier):
+    def _revert_inventory_on_pending(self, original_items, store):
         for item in original_items:
             try:
-                inventory = Inventory.objects.get(product=item.product, store=store, supplier=supplier)
+                inventory = Inventory.objects.get(product=item.product, store=store)
                 inventory_in_stock = int(inventory.in_stock) if inventory.in_stock else 0
                 new_in_stock = inventory_in_stock - item.quantity
 
@@ -581,29 +564,21 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
     #             except Inventory.DoesNotExist:
     #                 pass
     
-    def _adjust_inventory_on_update(self, original_items, updated_items_data, original_store, updated_store_id, original_supplier, updated_supplier_id):
+    def _adjust_inventory_on_update(self, original_items, updated_items_data, original_store, updated_store_id):
         # Check if the store has changed
         if original_store.id != updated_store_id:
             # Revert inventory changes for the original store
-            self._revert_inventory_on_pending(original_items, original_store, original_supplier)
+            self._revert_inventory_on_pending(original_items, original_store)
             # Update inventory for the new store
-            self._update_inventory_on_completion(updated_items_data, updated_store_id, updated_supplier_id)
-        
-        # Check if the supplier has changed
-        if original_supplier.id != updated_supplier_id:
-            # Revert inventory changes for the original supplier
-            self._revert_inventory_on_pending(original_items, original_store, original_supplier)
-            # Update inventory for the new supplier
-            self._update_inventory_on_completion(updated_items_data, updated_store_id, updated_supplier_id)
-        
-        # If neither store nor supplier has changed, simply update the inventory quantities
-        if original_store.id == updated_store_id and original_supplier.id == updated_supplier_id:
+            self._update_inventory_on_completion(updated_items_data, updated_store_id)
+
+        # If store has not changed, simply update the inventory quantities
+        if original_store.id == updated_store_id:
             for original_item, updated_item_data in zip(original_items, updated_items_data):
                 try:
                     inventory = Inventory.objects.get(
                         product=original_item.product,
                         store=original_store,
-                        supplier=original_supplier
                     )
 
                     # Calculate the difference in quantity

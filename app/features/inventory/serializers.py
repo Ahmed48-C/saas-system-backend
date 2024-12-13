@@ -18,7 +18,6 @@ class GetSingleInventorySerializer(serializers.ModelSerializer):
             'max_stock',
             'operator_id',
             'store_id',
-            'supplier_id',
             'product_id',
         ]
 
@@ -26,7 +25,6 @@ class GetSingleInventorySerializer(serializers.ModelSerializer):
 class InventoryGetAllSerializer(serializers.ModelSerializer):
     operator = serializers.SerializerMethodField('get_operator_name')
     store = serializers.SerializerMethodField('get_store_name')
-    supplier = serializers.SerializerMethodField('get_supplier_name')
     product = serializers.SerializerMethodField('get_product_name')
 
     class Meta:
@@ -40,7 +38,6 @@ class InventoryGetAllSerializer(serializers.ModelSerializer):
             'max_stock',
             'operator',
             'store',
-            'supplier',
             'product',
         ]
 
@@ -53,10 +50,6 @@ class InventoryGetAllSerializer(serializers.ModelSerializer):
         return obj.store and obj.store.name
 
     @staticmethod
-    def get_supplier_name(obj):
-        return obj.supplier and obj.supplier.name
-
-    @staticmethod
     def get_product_name(obj):
         return obj.product and obj.product.name
 
@@ -64,7 +57,6 @@ class InventoryGetAllSerializer(serializers.ModelSerializer):
 class InventoryCreateUpdateSerializer(serializers.ModelSerializer):
     # operator_id = serializers.CharField(max_length=10)
     store_id = serializers.CharField(max_length=10)
-    supplier_id = serializers.CharField(max_length=10)
     product_id = serializers.CharField(max_length=10)
 
     def validate(self, attrs):
@@ -84,7 +76,6 @@ class InventoryCreateUpdateSerializer(serializers.ModelSerializer):
             'max_stock',
             # 'operator_id',
             'store_id',
-            'supplier_id',
             'product_id',
         ]
 

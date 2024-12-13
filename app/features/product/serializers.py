@@ -16,7 +16,7 @@ class GetSingleProductSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'image_file',
-            # 'supplier_id',
+            'supplier_id',
             'brand',
             'measure_unit',
             'weight',
@@ -36,7 +36,7 @@ class GetSingleProductSerializer(serializers.ModelSerializer):
 
 
 class ProductGetAllSerializer(serializers.ModelSerializer):
-    # supplier = serializers.SerializerMethodField('get_supplier_name')
+    supplier = serializers.SerializerMethodField('get_supplier_name')
     image_file = serializers.SerializerMethodField('get_image_file')
 
     class Meta:
@@ -47,7 +47,7 @@ class ProductGetAllSerializer(serializers.ModelSerializer):
             'name',
             'description',
             'image_file',
-            # 'supplier',
+            'supplier',
             'brand',
             'measure_unit',
             'weight',
@@ -60,9 +60,9 @@ class ProductGetAllSerializer(serializers.ModelSerializer):
             'weight_unit',
         ]
 
-    # @staticmethod
-    # def get_supplier_name(obj):
-        # return obj.supplier and obj.supplier.name
+    @staticmethod
+    def get_supplier_name(obj):
+        return obj.supplier and obj.supplier.name
 
     @staticmethod
     def get_image_file(obj):
@@ -71,7 +71,7 @@ class ProductGetAllSerializer(serializers.ModelSerializer):
 
 
 class ProductCreateUpdateSerializer(serializers.ModelSerializer):
-    # supplier_id = serializers.CharField(max_length=10)
+    supplier_id = serializers.CharField(max_length=10)
 
     class Meta:
         model = Product
@@ -79,7 +79,7 @@ class ProductCreateUpdateSerializer(serializers.ModelSerializer):
             'code',
             'name',
             'description',
-            # 'supplier_id',
+            'supplier_id',
             'brand',
             'measure_unit',
             'weight',
