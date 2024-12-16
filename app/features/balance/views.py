@@ -21,8 +21,8 @@ from app.features.balance.serializers import (
 from app.features.balance.models import Balance
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_balance(request):
     records, actual_total_count = Balance.objects.get_all_by_limit(request) #Balance.objects.all()
     serializer = BalanceGetAllSerializer(records, many=True)
@@ -36,6 +36,8 @@ def get_all_balance(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_balance(request):
     serializer = BalanceCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -44,6 +46,8 @@ def create_balance(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_balance(request, balance_id):
     try:
         balance = Balance.objects.get(id=balance_id)
@@ -57,6 +61,8 @@ def update_balance(request, balance_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_balance(request, balance_id):
     try:
         balance = Balance.objects.get(id=balance_id)
@@ -92,6 +98,8 @@ def delete_balance(request, balance_id):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_balance_by_id(request, balance_id):
     try:
         balance = Balance.objects.get(id=balance_id)
@@ -103,6 +111,8 @@ def get_balance_by_id(request, balance_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_balances(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):

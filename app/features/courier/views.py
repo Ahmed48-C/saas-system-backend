@@ -22,8 +22,8 @@ from app.common.json_utils import JsonUtils
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_courier(request):
     records, actual_total_count = Courier.objects.get_all_by_limit(request)
     serializer = CourierGetAllSerializer(records, many=True)
@@ -37,6 +37,8 @@ def get_all_courier(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_courier(request):
     serializer = CourierCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -45,6 +47,8 @@ def create_courier(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_courier(request, courier_id):
     try:
         courier = Courier.objects.get(id=courier_id)
@@ -58,6 +62,8 @@ def update_courier(request, courier_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_courier(request, courier_id):
     try:
         courier = Courier.objects.get(id=courier_id)
@@ -69,6 +75,8 @@ def delete_courier(request, courier_id):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_courier_by_id(request, courier_id):
     try:
         courier = Courier.objects.get(id=courier_id)
@@ -80,12 +88,16 @@ def get_courier_by_id(request, courier_id):
 
 
 @api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_courier_vehicle_types(request):
     obj = JsonUtils.get_choices_as_list(VehicleTypes.choices)
     return JsonResponse(obj, safe=False)
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_couriers(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):

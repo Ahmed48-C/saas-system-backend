@@ -30,8 +30,8 @@ def records_list(request):
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_location(request):
     records, actual_total_count = Location.objects.get_all_by_limit(request) #Location.objects.all()
     serializer = LocationGetAllSerializer(records, many=True)
@@ -45,6 +45,8 @@ def get_all_location(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_location(request):
     serializer = LocationCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -53,6 +55,8 @@ def create_location(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_location(request, location_id):
     try:
         location = Location.objects.get(id=location_id)
@@ -66,6 +70,8 @@ def update_location(request, location_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_location(request, location_id):
     try:
         location = Location.objects.get(id=location_id)
@@ -101,6 +107,8 @@ def delete_location(request, location_id):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_location_by_id(request, location_id):
     try:
         location = Location.objects.get(id=location_id)
@@ -112,6 +120,8 @@ def get_location_by_id(request, location_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_locations(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):

@@ -26,8 +26,8 @@ from app.common.common import (
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_product(request):
     records, actual_total_count = Product.objects.get_all_by_limit(request)
     serializer = ProductGetAllSerializer(records, many=True)
@@ -41,6 +41,8 @@ def get_all_product(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_product(request):
     # image = add_timestamp_to_image_file(request.data['image'])
     # request.data['image'] = image
@@ -69,6 +71,8 @@ def create_product(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_product(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
@@ -102,6 +106,8 @@ def update_product(request, product_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_product(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
@@ -137,6 +143,8 @@ def delete_product(request, product_id):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_product_by_id(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
@@ -148,6 +156,8 @@ def get_product_by_id(request, product_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_products(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):

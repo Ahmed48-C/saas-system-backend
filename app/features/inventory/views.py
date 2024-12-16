@@ -23,8 +23,8 @@ from app.features.inventory.models import Inventory
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_inventory(request):
     records, actual_total_count = Inventory.objects.get_all_by_limit(request)
     serializer = InventoryGetAllSerializer(records, many=True)
@@ -38,6 +38,8 @@ def get_all_inventory(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_inventory(request):
     # TODO
     request.data['userprofile'] = None # current error : AttributeError: 'AnonymousUser' object has no attribute 'userprofile'
@@ -55,6 +57,8 @@ def create_inventory(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_inventory(request, inventory_id):
     try:
         inventory = Inventory.objects.get(id=inventory_id)
@@ -71,6 +75,8 @@ def update_inventory(request, inventory_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_inventory(request, inventory_id):
     try:
         inventory = Inventory.objects.get(id=inventory_id)
@@ -106,6 +112,8 @@ def delete_inventory(request, inventory_id):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_inventory_by_id(request, inventory_id):
     try:
         inventory = Inventory.objects.get(id=inventory_id)
@@ -117,6 +125,8 @@ def get_inventory_by_id(request, inventory_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_inventories(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):

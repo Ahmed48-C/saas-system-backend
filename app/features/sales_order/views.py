@@ -25,8 +25,8 @@ from app.common.json_utils import JsonUtils
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_sales_orders(request):
     records, actual_total_count = SalesOrder.objects.get_all_by_limit(request)
     serializer = SalesOrderGetAllSerializer(records, many=True)
@@ -40,8 +40,8 @@ def get_all_sales_orders(request):
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_completed_sales_orders(request):
     records, actual_total_count = SalesOrder.objects.get_all_by_limit(request, status="Completed")
     serializer = SalesOrderGetAllSerializer(records, many=True)
@@ -54,8 +54,8 @@ def get_completed_sales_orders(request):
     return Response(json_obj)
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_cancelled_sales_orders(request):
     records, actual_total_count = SalesOrder.objects.get_all_by_limit(request, status="Cancelled")
     serializer = SalesOrderGetAllSerializer(records, many=True)
@@ -69,8 +69,8 @@ def get_cancelled_sales_orders(request):
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_delivery_sales_orders(request):
     records, actual_total_count = SalesOrder.objects.get_all_by_limit(request, status="Delivery")
     serializer = SalesOrderGetAllSerializer(records, many=True)
@@ -84,8 +84,8 @@ def get_delivery_sales_orders(request):
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_sales_order_by_id(request, sales_order_id):
     try:
         if sales_order_id == "last":
@@ -102,6 +102,8 @@ def get_sales_order_by_id(request, sales_order_id):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_sales_order(request):
     serializer = SalesOrderCreateUpdateSerializer(data=request.data)
     if serializer.is_valid():
@@ -113,6 +115,8 @@ def create_sales_order(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_sales_order(request, sales_order_id):
     try:
         # Retrieve the sales order by ID
@@ -135,6 +139,8 @@ def update_sales_order(request, sales_order_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_sales_order(request, sales_order_id):
     try:
         sales_order = SalesOrder.objects.get(id=sales_order_id)
@@ -149,6 +155,8 @@ def delete_sales_order(request, sales_order_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_sales_orders(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):

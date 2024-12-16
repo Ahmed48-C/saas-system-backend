@@ -67,6 +67,8 @@ def get_all_balance_log(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_balance_log(request):
     serializer = BalanceLogCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -75,6 +77,8 @@ def create_balance_log(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_balance_log(request, balance_log_id):
     try:
         balance_log = BalanceLog.objects.get(id=balance_log_id)
@@ -88,6 +92,8 @@ def update_balance_log(request, balance_log_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_balance_log(request, balance_log_id):
     try:
         balance_log = BalanceLog.objects.get(id=balance_log_id)
@@ -123,6 +129,8 @@ def delete_balance_log(request, balance_log_id):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_balance_log_by_id(request, balance_log_id):
     try:
         balance_log = BalanceLog.objects.get(id=balance_log_id)
@@ -149,6 +157,8 @@ def get_balance_log_by_id(request, balance_log_id):
 #     except Exception as e:
 #         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_balance_logs(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):

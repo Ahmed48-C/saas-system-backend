@@ -26,8 +26,8 @@ from app.features.inventory_log.models import ActionLog, AutoNoteLog
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_purchase_order(request):
     records, actual_total_count = PurchaseOrder.objects.get_all_by_limit(request)
     serializer = PurchaseOrderGetAllSerializer(records, many=True)
@@ -118,6 +118,8 @@ def get_all_purchase_order(request):
 #     return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_purchase_order(request):
     serializer = PurchaseOrderCreateUpdateSerializer(data=request.data)
     if serializer.is_valid():
@@ -278,6 +280,8 @@ from django.db import transaction
 
 
 @api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_purchase_order(request, purchase_order_id):
     try:
         # Retrieve the purchase order by ID
@@ -333,6 +337,8 @@ def update_purchase_order(request, purchase_order_id):
 #     return Response()
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_purchase_order(request, purchase_order_id):
     try:
         purchase_order = PurchaseOrder.objects.get(id=purchase_order_id)
@@ -446,6 +452,8 @@ def delete_purchase_order(request, purchase_order_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_purchase_order_stock(request, purchase_order_id):
     try:
         purchase_order = PurchaseOrder.objects.get(id=purchase_order_id)
@@ -509,6 +517,8 @@ def delete_purchase_order_stock(request, purchase_order_id):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_purchase_order_by_id(request, purchase_order_id):
     try:
         if purchase_order_id == "last":
@@ -565,6 +575,8 @@ def get_purchase_order_by_id(request, purchase_order_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_purchase_orders(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):
@@ -614,6 +626,8 @@ def delete_purchase_orders(request):
 
 
 @api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_purchase_status_choices(request):
     obj = JsonUtils.get_choices_as_list(PurchaseStatus.choices)
     return JsonResponse(obj, safe=False)
