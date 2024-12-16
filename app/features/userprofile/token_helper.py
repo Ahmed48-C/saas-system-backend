@@ -2,13 +2,17 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from app.features.userprofile.models import UserProfile
 from app.features.permission_role.serializers import PermissionRoleSerializer
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import AccessToken
 
 
 from rest_framework_simplejwt.views import (
     TokenObtainPairView,
+    TokenVerifyView
 )
 from rest_framework_simplejwt.serializers import (
     TokenObtainPairSerializer,
+    TokenVerifySerializer
 )
 
 
@@ -68,3 +72,29 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
 
 class CustomTokenObtainPairView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
+
+
+class CustomTokenVerifySerializer(TokenVerifySerializer):
+    def validate(self, attrs):
+        data = super().validate(attrs)
+        
+        try:
+            # Get the user from the token
+            token = AccessToken(attrs['token'])
+            user_id = token['user_id']
+            self.user = User.objects.get(id=user_id)
+            
+            # Now we can use self.user like in CustomTokenObtainPairSerializer
+            data['user_profile'] = jwt_response_payload_handler(
+                token=attrs['token'],
+                user=self.user
+            )
+            data['valid'] = True
+        except (TokenError, User.DoesNotExist):
+            return {'valid': False}
+
+        return data
+
+
+class CustomTokenVerifyView(TokenVerifyView):
+    serializer_class = CustomTokenVerifySerializer

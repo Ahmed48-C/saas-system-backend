@@ -21,8 +21,8 @@ from app.features.store.serializers import (
 from app.features.store.models import Store
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_store(request):
     records, actual_total_count = Store.objects.get_all_by_limit(request) #Store.objects.all()
     serializer = StoreGetAllSerializer(records, many=True)
@@ -36,6 +36,8 @@ def get_all_store(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_store(request):
     serializer = StoreCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -44,6 +46,8 @@ def create_store(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_store(request, store_id):
     try:
         store = Store.objects.get(id=store_id)
@@ -57,6 +61,8 @@ def update_store(request, store_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_store(request, store_id):
     try:
         store = Store.objects.get(id=store_id)
@@ -92,6 +98,8 @@ def delete_store(request, store_id):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_store_by_id(request, store_id):
     try:
         store = Store.objects.get(id=store_id)
@@ -103,6 +111,8 @@ def get_store_by_id(request, store_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_stores(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):

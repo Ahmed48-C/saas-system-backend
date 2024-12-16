@@ -22,8 +22,8 @@ from app.features.supplier.models import Supplier
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_supplier(request):
     records, actual_total_count = Supplier.objects.get_all_by_limit(request)
     serializer = SupplierGetAllSerializer(records, many=True)
@@ -37,6 +37,8 @@ def get_all_supplier(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_supplier(request):
     serializer = SupplierCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -45,6 +47,8 @@ def create_supplier(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_supplier(request, supplier_id):
     try:
         supplier = Supplier.objects.get(id=supplier_id)
@@ -58,6 +62,8 @@ def update_supplier(request, supplier_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_supplier(request, supplier_id):
     try:
         supplier = Supplier.objects.get(id=supplier_id)
@@ -93,6 +99,8 @@ def delete_supplier(request, supplier_id):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_supplier_by_id(request, supplier_id):
     try:
         supplier = Supplier.objects.get(id=supplier_id)
@@ -119,6 +127,8 @@ def get_supplier_by_id(request, supplier_id):
 #     except Exception as e:
 #         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_suppliers(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):

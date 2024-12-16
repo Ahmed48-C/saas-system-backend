@@ -18,8 +18,8 @@ from app.features.reminder.serializers import (
 from app.features.reminder.models import Reminder
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_reminder(request):
     records, actual_total_count = Reminder.objects.get_all_by_limit(request) #Reminder.objects.all()
     serializer = ReminderGetAllSerializer(records, many=True)
@@ -33,6 +33,8 @@ def get_all_reminder(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_reminder(request):
     serializer = ReminderCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -41,6 +43,8 @@ def create_reminder(request):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_reminder(request, reminder_id):
     try:
         reminder = Reminder.objects.get(id=reminder_id)
@@ -51,6 +55,8 @@ def delete_reminder(request, reminder_id):
     return Response()
 
 @api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_reminder(request, reminder_id):
     try:
         reminder = Reminder.objects.get(id=reminder_id)
@@ -64,6 +70,8 @@ def update_reminder(request, reminder_id):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_reminder_by_id(request, reminder_id):
     try:
         reminder = Reminder.objects.get(id=reminder_id)

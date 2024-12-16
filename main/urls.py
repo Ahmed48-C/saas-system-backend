@@ -18,7 +18,10 @@ from django.urls import path, include
 # from rest_framework_simplejwt.views import (
 #     TokenObtainPairView,
 # )
-from app.features.userprofile.token_helper import CustomTokenObtainPairView
+from app.features.userprofile.token_helper import (
+    CustomTokenObtainPairView,
+    CustomTokenVerifyView
+)
 
 
 urlpatterns = [
@@ -46,4 +49,5 @@ urlpatterns = [
     # Token api using 'POST' request
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('token/verify/', CustomTokenVerifyView.as_view(), name='token_verify'),
 ]

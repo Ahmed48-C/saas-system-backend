@@ -20,8 +20,8 @@ from app.common.json_utils import JsonUtils
 from app.features.balance_history.models import BalanceHistory, ActionType
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_balance_history(request):
     records, actual_total_count = BalanceHistory.objects.get_all_by_limit(request) #BalanceHistory.objects.all()
     serializer = BalanceHistoryGetAllSerializer(records, many=True)
@@ -35,6 +35,8 @@ def get_all_balance_history(request):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_balance_history(request, balance_history_id):
     try:
         balance_history = BalanceHistory.objects.get(id=balance_history_id)
@@ -70,6 +72,8 @@ def delete_balance_history(request, balance_history_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_balances_history(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):

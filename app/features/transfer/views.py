@@ -25,8 +25,8 @@ from app.features.balance.models import Balance
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_transfer(request):
     records, actual_total_count = Transfer.objects.get_all_by_limit(request)
     serializer = TransferGetAllSerializer(records, many=True)
@@ -85,6 +85,8 @@ def get_all_transfer(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 @transaction.atomic  # Ensure atomicity of the operation
 def create_transfer(request):
     serializer = TransferCreateUpdateSerializer(data=request.data)
@@ -94,6 +96,8 @@ def create_transfer(request):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_transfer(request, transfer_id):
     try:
         transfer = Transfer.objects.get(id=transfer_id)
@@ -129,6 +133,8 @@ def delete_transfer(request, transfer_id):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_transfer_by_id(request, transfer_id):
     try:
         transfer = Transfer.objects.get(id=transfer_id)
@@ -140,6 +146,8 @@ def get_transfer_by_id(request, transfer_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_transfers(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):

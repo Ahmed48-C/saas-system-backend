@@ -22,8 +22,8 @@ from app.common.json_utils import JsonUtils
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_inventory_log(request):
     records, actual_total_count = InventoryLog.objects.get_all_by_limit(request)
     serializer = InventoryLogGetAllSerializer(records, many=True)
@@ -37,6 +37,8 @@ def get_all_inventory_log(request):
 
 
 @api_view(['POST'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def create_inventory_log(request):
     serializer = InventoryLogCreateUpdateSerializer(data=request.data)
     serializer.is_valid(raise_exception=True)
@@ -45,6 +47,8 @@ def create_inventory_log(request):
 
 
 @api_view(['PUT'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def update_inventory_log(request, inventory_log_id):
     try:
         inventory_log = InventoryLog.objects.get(id=inventory_log_id)
@@ -58,6 +62,8 @@ def update_inventory_log(request, inventory_log_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_inventory_log(request, inventory_log_id):
     try:
         inventory_log = InventoryLog.objects.get(id=inventory_log_id)
@@ -69,6 +75,8 @@ def delete_inventory_log(request, inventory_log_id):
 
 
 @api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_inventory_log_by_id(request, inventory_log_id):
     try:
         inventory_log = InventoryLog.objects.get(id=inventory_log_id)
@@ -80,6 +88,8 @@ def get_inventory_log_by_id(request, inventory_log_id):
 
 
 @api_view(['DELETE'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def delete_inventory_logs(request):
     # Ensure the request body contains a list of IDs
     if not isinstance(request.data, list):

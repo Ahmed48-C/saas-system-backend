@@ -20,8 +20,8 @@ from app.features.client_balance.models import ClientBalance
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_client_balance(request):
     records, actual_total_count = ClientBalance.objects.get_all_by_limit(request)
     serializer = ClientBalanceGetAllSerializer(records, many=True)
