@@ -24,8 +24,8 @@ from app.features.balance.models import Balance
 
 
 @api_view(['GET'])
-# @authentication_classes([JWTAuthentication])
-# @permission_classes([IsAuthenticated])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_all_balance_log(request):
     records, actual_total_count = BalanceLog.objects.get_all_by_limit(request)
     serializer = BalanceLogGetAllSerializer(records, many=True)

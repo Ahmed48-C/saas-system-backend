@@ -26,7 +26,7 @@ SECRET_KEY = '&f6sx^2e!*x1(mdo$#k6fu#@12%1rb4x9^3fw1n9znhk0du#1_'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', '127.0.0.1']
 
 
 # Application definition
@@ -41,13 +41,14 @@ INSTALLED_APPS = [
     'app',
     'corsheaders',
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
 ]
 
 MIDDLEWARE = [
-    'django.middleware.security.SecurityMiddleware',
-    'django.contrib.sessions.middleware.SessionMiddleware',
     'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -135,17 +136,104 @@ USE_TZ = True
 
 STATIC_URL = '/static/'
 
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'app.features.userprofile.authenticate.CustomAuthentication',
+    ),
+}
+
 # allow any url
 # CORS_ORIGIN_ALLOW_ALL = True
 # specfically allow the react url
+CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:4200",
 ]
 
+# CSRF settings (if needed)
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:4200",
+]
+
 #https://django-rest-framework-simplejwt.readthedocs.io/en/latest/settings.html#settings
+# SIMPLE_JWT = {
+#     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=1),
+#     "REFRESH_TOKEN_LIFETIME": timedelta(days=1),
+#     "ROTATE_REFRESH_TOKENS": True,
+#     "BLACKLIST_AFTER_ROTATION": True,
+#     "ALGORITHM": "HS256",  # Using HS256
+#     # The algorithm used to sign/verify the token if used need SIGNING_KEY and VERIFYING_KEY
+#     # "ALGORITHM": "RS256",
+#     # "SIGNING_KEY": open(os.path.join(BASE_DIR, 'path/to/private.pem')).read(),
+#     # "VERIFYING_KEY": open(os.path.join(BASE_DIR, 'path/to/public.pem')).read(),
+#     "AUTH_HEADER_TYPES": ("Bearer",),
+# }
+
 SIMPLE_JWT = {
-    # controls for how long the token can be used
-    "ACCESS_TOKEN_LIFETIME": timedelta(days=2), #days/minutes/seconds
+  'ACCESS_TOKEN_LIFETIME': timedelta(minutes=1),
+  'REFRESH_TOKEN_LIFETIME': timedelta(days=1),
+  'ROTATE_REFRESH_TOKENS': False,
+  'BLACKLIST_AFTER_ROTATION': True,
+  'UPDATE_LAST_LOGIN': False,
+
+  'ALGORITHM': 'HS256',
+  'SIGNING_KEY': SECRET_KEY,
+  'VERIFYING_KEY': None,
+  'AUDIENCE': None,
+  'ISSUER': None,
+
+  'AUTH_HEADER_TYPES': ('Bearer',),
+  'AUTH_HEADER_NAME': 'HTTP_AUTHORIZATION',
+  'USER_ID_FIELD': 'id',
+  'USER_ID_CLAIM': 'user_id',
+  'USER_AUTHENTICATION_RULE': 'rest_framework_simplejwt.authentication.default_user_authentication_rule',
+
+  'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+  'TOKEN_TYPE_CLAIM': 'token_type',
+
+  'JTI_CLAIM': 'jti',
+
+  'SLIDING_TOKEN_REFRESH_EXP_CLAIM': 'refresh_exp',
+  'SLIDING_TOKEN_LIFETIME': timedelta(minutes=1),
+  'SLIDING_TOKEN_REFRESH_LIFETIME': timedelta(days=1),
+
+  # Custom settings for handling refresh tokens via cookies
+  'AUTH_REFRESH_COOKIE': 'refresh_token',
+  'AUTH_REFRESH_COOKIE_PATH': '/',
+  'AUTH_REFRESH_COOKIE_SECURE': False,  # Set to True in production
+  'AUTH_REFRESH_COOKIE_HTTP_ONLY': True,
+  'AUTH_REFRESH_COOKIE_SAMESITE': 'Lax',  # Changed from 'None' to 'Lax' for development
+  
+#   'AUTH_REFRESH_COOKIE': 'refresh_token',      # Cookie name for refresh token
+#   'AUTH_REFRESH_COOKIE_DOMAIN': None,         # Domain for the cookie
+#   'AUTH_REFRESH_COOKIE_SECURE': False,        # Set to True in production
+#   'AUTH_REFRESH_COOKIE_HTTP_ONLY': True,      # Prevents JavaScript access
+#   'AUTH_REFRESH_COOKIE_PATH': '/',            # Path for the cookie
+#   'AUTH_REFRESH_COOKIE_SAMESITE': 'None', 
 }
 
 IMAGE_PATH_CLOUDINARY = "https://res.cloudinary.com/dblq0iusj/image/upload/v1730376611/"
+
+# Add these new CORS settings
+CORS_ALLOW_METHODS = [
+    'DELETE',
+    'GET',
+    'OPTIONS',
+    'PATCH',
+    'POST',
+    'PUT',
+]
+
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
+CORS_EXPOSE_HEADERS = ['Content-Type', 'X-CSRFToken']
