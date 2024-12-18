@@ -20,7 +20,9 @@ from django.urls import path, include
 # )
 from app.features.userprofile.token_helper import (
     CustomTokenObtainPairView,
-    CustomTokenVerifyView
+    CustomTokenVerifyView,
+    CustomTokenRefreshView,
+    # LoginView
 )
 
 
@@ -49,5 +51,7 @@ urlpatterns = [
     # Token api using 'POST' request
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('token/', CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
+    # path('token/', LoginView.as_view(), name='token_obtain_pair'),
+    path('token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('token/verify/', CustomTokenVerifyView.as_view(), name='token_verify'),
 ]
