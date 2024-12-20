@@ -20,3 +20,5 @@ from app.features.sales_order_delivery.models import SalesOrderDelivery
 from app.features.inventory_log.models import InventoryLog
 from app.features.client_balance.models import ClientBalance
 from app.features.balance_history.models import BalanceHistory
+from app.features.income.models import Income
+from app.features.expense.models import Expense
