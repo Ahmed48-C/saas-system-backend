@@ -22,3 +22,4 @@ from app.features.client_balance.models import ClientBalance
 from app.features.balance_history.models import BalanceHistory
 from app.features.income.models import Income
 from app.features.expense.models import Expense
+from app.features.invoice.models import Invoice

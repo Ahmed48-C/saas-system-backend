@@ -193,6 +193,8 @@ def delete_sales_orders(request):
 
 
 @api_view(["GET"])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
 def get_sales_status_choices(request):
     obj = JsonUtils.get_choices_as_list(SalesStatus.choices)
     return JsonResponse(obj, safe=False)
