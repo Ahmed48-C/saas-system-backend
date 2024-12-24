@@ -23,3 +23,4 @@ from app.features.balance_history.admin import BalanceHistoryAdmin
 from app.features.income.admin import IncomeAdmin
 from app.features.expense.admin import ExpenseAdmin
 from app.features.invoice.admin import InvoiceAdmin
+from app.features.task.admin import TaskAdmin

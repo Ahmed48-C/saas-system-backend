@@ -50,6 +50,7 @@ urlpatterns = [
     path('api/', include('app.features.income.urls')),
     path('api/', include('app.features.expense.urls')),
     path('api/', include('app.features.invoice.urls')),
+    path('api/', include('app.features.task.urls')),
 
     # Token api using 'POST' request
     # path('token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
