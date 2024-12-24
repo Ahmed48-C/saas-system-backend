@@ -23,3 +23,4 @@ from app.features.balance_history.models import BalanceHistory
 from app.features.income.models import Income
 from app.features.expense.models import Expense
 from app.features.invoice.models import Invoice
+from app.features.task.models import Task
