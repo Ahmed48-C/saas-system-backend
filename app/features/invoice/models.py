@@ -20,11 +20,12 @@ class Invoice(models.Model):
     number = models.CharField(max_length=80)
     date = models.DateField()
     due_date = models.DateField()
-    currency = models.CharField(max_length=3, null=True, blank=True)
     payment_method = models.CharField(max_length=80, choices=InvoicePaymentMethod.choices, null=True, blank=True)
     total = models.DecimalField(max_digits=35, decimal_places=2)
     note = models.TextField(blank=True, null=True)
     attachment = models.CharField(max_length=300, null=True, blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
 
     customer = models.ForeignKey(Customer, on_delete=models.PROTECT)
     location = models.ForeignKey(Location, on_delete=models.PROTECT, null=True, blank=True)

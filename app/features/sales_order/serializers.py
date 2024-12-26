@@ -327,7 +327,8 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
             store_id=store_id,
             balance_id=balance_id,
             customer_id=customer_id,
-            client_id=client_id
+            client_id=client_id,
+            completed_at=timezone.now().date() if status_order.upper() == "COMPLETED" else None
         )
 
         # Create the SalesItem(s) for this SalesOrder
@@ -496,6 +497,7 @@ class SalesOrderCreateUpdateSerializer(serializers.ModelSerializer):
         instance.balance_id = balance_id
         instance.customer_id = customer_id
         instance.client_id = client_id
+        instance.completed_at = timezone.now().date() if updated_status.upper() == "COMPLETED" else None
         instance.save()
 
         # Update the SalesItem(s) related to this SalesOrder

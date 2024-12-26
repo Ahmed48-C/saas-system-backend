@@ -8,11 +8,15 @@ from app.features.purchase_order.views import (
     get_purchase_order_by_id,
     delete_purchase_orders,
     get_purchase_status_choices,
+    get_last_30_days_purchase_orders,
+    get_current_month_purchase_orders,
 )
 
 urlpatterns = [
     path('get/purchase_order/<purchase_order_id>/', get_purchase_order_by_id),
     path('get/purchase_orders/', get_all_purchase_order),
+    path('get/purchase_orders/last-30-days/', get_last_30_days_purchase_orders),
+    path('get/purchase_orders/current-month/', get_current_month_purchase_orders),
     path('post/purchase_order/', create_purchase_order),
     path('put/purchase_order/<purchase_order_id>/', update_purchase_order),
     path('delete/purchase_order/<purchase_order_id>/', delete_purchase_order),

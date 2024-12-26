@@ -15,6 +15,9 @@ class PurchaseOrder(models.Model):
     total = models.DecimalField(max_digits=35, decimal_places=2)
     status = models.CharField(max_length=50, choices=PurchaseStatus.choices, default=PurchaseStatus.PENDING)
 
+    created_at = models.DateTimeField(auto_now_add=True)
+    completed_at = models.DateField(null=True, blank=True)
+
     operator = models.ForeignKey(Operator, on_delete=models.PROTECT, null=True, blank=True)
     store = models.ForeignKey(Store, on_delete=models.PROTECT, null=True, blank=True)
     balance = models.ForeignKey(Balance, on_delete=models.PROTECT, null=True, blank=True)

@@ -8,6 +8,8 @@ from app.features.expense.views import (
     delete_expenses,
     get_all_expense_category,
     create_expense_category,
+    get_last_30_days_expenses,
+    get_current_month_expenses,
 )
 
 urlpatterns = [
@@ -19,4 +21,6 @@ urlpatterns = [
     path('delete/expenses/', delete_expenses),
     path('get/expense_categories/', get_all_expense_category),
     path('post/expense_category/', create_expense_category),
+    path('get/expenses/last-30-days/', get_last_30_days_expenses),
+    path('get/expenses/current-month/', get_current_month_expenses),
 ]

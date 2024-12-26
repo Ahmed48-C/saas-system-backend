@@ -23,7 +23,6 @@ class InvoiceAdmin(admin.ModelAdmin):
         'number',
         'date',
         'due_date',
-        'currency',
         'payment_method',
         'total',
         'note',

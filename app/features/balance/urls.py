@@ -6,6 +6,7 @@ from app.features.balance.views import (
     delete_balance,
     get_balance_by_id,
     delete_balances,
+    get_total_balance,
 )
 
 urlpatterns = [
@@ -15,4 +16,5 @@ urlpatterns = [
     path('put/balance/<balance_id>/', update_balance),
     path('delete/balance/<balance_id>/', delete_balance),
     path('delete/balances/', delete_balances),
+    path('get/total-balance/', get_total_balance),
 ]

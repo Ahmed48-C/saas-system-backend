@@ -213,3 +213,69 @@ def create_income_category(request):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_last_30_days_incomes(request):
+    from datetime import datetime, timedelta
+    from django.db.models import Sum
+    
+    # Calculate the date 30 days ago from today
+    thirty_days_ago = datetime.now().date() - timedelta(days=30)
+    
+    # Get incomes for last 30 days
+    incomes = Income.objects.filter(date__gte=thirty_days_ago).order_by('-date')
+    
+    # Calculate total amount
+    total_amount = incomes.aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Prepare simplified income data
+    income_list = []
+    for income in incomes:
+        income_list.append({
+            'amount': income.amount,
+            'date': income.date
+        })
+    
+    return Response({
+        'total_amount': total_amount,
+        'incomes': income_list
+    })
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_current_month_incomes(request):
+    from datetime import datetime
+    from django.db.models import Sum
+    from django.utils import timezone
+    
+    # Get the current date
+    today = timezone.now()
+    # Get the first day of the current month
+    first_day = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    # Get incomes for current month
+    incomes = Income.objects.filter(
+        date__year=today.year,
+        date__month=today.month
+    ).order_by('-date')
+    
+    # Calculate total amount
+    total_amount = incomes.aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Prepare simplified income data
+    income_list = []
+    for income in incomes:
+        income_list.append({
+            'amount': income.amount,
+            'date': income.date
+        })
+    
+    return Response({
+        'total_amount': total_amount,
+        'incomes': income_list
+    })

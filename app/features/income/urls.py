@@ -8,6 +8,8 @@ from app.features.income.views import (
     delete_incomes,
     get_all_income_category,
     create_income_category,
+    get_last_30_days_incomes,
+    get_current_month_incomes,
 )
 
 urlpatterns = [
@@ -19,4 +21,6 @@ urlpatterns = [
     path('delete/incomes/', delete_incomes),
     path('get/income_categories/', get_all_income_category),
     path('post/income_category/', create_income_category),
+    path('get/incomes/last-30-days/', get_last_30_days_incomes),
+    path('get/incomes/current-month/', get_current_month_incomes),
 ]

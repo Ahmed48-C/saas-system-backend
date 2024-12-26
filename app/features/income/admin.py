@@ -13,7 +13,6 @@ class IncomeAdmin(admin.ModelAdmin):
         'note',
         'date',
         'action',
-        'currency',
         'operator',
         'balance',
         'customer',

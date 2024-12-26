@@ -10,6 +10,8 @@ from app.features.sales_order.views import (
     get_cancelled_sales_orders,
     get_sales_status_choices,
     get_delivery_sales_orders,
+    get_last_30_days_sales,
+    get_current_month_sales,
 )
 
 urlpatterns = [
@@ -23,4 +25,6 @@ urlpatterns = [
     path('delete/sales_orders/', delete_sales_orders),
     path('delete/sales_order/<sales_order_id>/', delete_sales_order),
     path('get/sales_status/', get_sales_status_choices),
+    path('get/sales_orders/last-30-days/', get_last_30_days_sales),
+    path('get/sales_orders/current-month/', get_current_month_sales),
 ]

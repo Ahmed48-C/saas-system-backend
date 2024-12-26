@@ -198,3 +198,74 @@ def delete_sales_orders(request):
 def get_sales_status_choices(request):
     obj = JsonUtils.get_choices_as_list(SalesStatus.choices)
     return JsonResponse(obj, safe=False)
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_last_30_days_sales(request):
+    from datetime import datetime, timedelta
+    from django.db.models import Sum
+    from django.utils import timezone
+    
+    # Calculate the date 30 days ago from today
+    thirty_days_ago = timezone.now() - timedelta(days=30)
+    
+    # Get completed sales orders for last 30 days
+    sales_orders = SalesOrder.objects.filter(
+        status=SalesStatus.COMPLETED,
+        completed_at__gte=thirty_days_ago
+    ).order_by('-completed_at')
+    
+    # Calculate total amount
+    total_amount = sales_orders.aggregate(total=Sum('total'))['total'] or 0
+    
+    # Prepare simplified sales order data
+    sales_list = []
+    for order in sales_orders:
+        sales_list.append({
+            'total': order.total,
+            'completed_at': order.completed_at
+        })
+    
+    return Response({
+        'total_amount': total_amount,
+        'sales': sales_list
+    })
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_current_month_sales(request):
+    from datetime import datetime
+    from django.db.models import Sum
+    from django.utils import timezone
+    
+    # Get the current date
+    today = timezone.now()
+    # Get the first day of the current month
+    first_day = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    # Get completed sales orders for current month
+    sales_orders = SalesOrder.objects.filter(
+        status=SalesStatus.COMPLETED,
+        completed_at__year=today.year,
+        completed_at__month=today.month
+    ).order_by('-completed_at')
+    
+    # Calculate total amount
+    total_amount = sales_orders.aggregate(total=Sum('total'))['total'] or 0
+    
+    # Prepare simplified sales order data
+    sales_list = []
+    for order in sales_orders:
+        sales_list.append({
+            'total': order.total,
+            'completed_at': order.completed_at
+        })
+    
+    return Response({
+        'total_amount': total_amount,
+        'sales': sales_list
+    })
