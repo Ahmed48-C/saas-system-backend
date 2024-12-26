@@ -36,7 +36,21 @@ class InventoryLog(models.Model):
     stock_before_action = models.IntegerField(max_length=80, blank=True, null=True)
     stock_after_action = models.IntegerField(max_length=80, blank=True, null=True)
 
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
     objects = InventoryLogQueryManager()
+
+    def soft_delete(self):
+        from django.utils import timezone
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
+
+    def restore(self):
+        self.is_deleted = False
+        self.deleted_at = None
+        self.save()
 
     def __str__(self):
         return str(self.action) + " - " + str(self.action_date)

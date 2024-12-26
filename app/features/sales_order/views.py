@@ -144,14 +144,13 @@ def update_sales_order(request, sales_order_id):
 def delete_sales_order(request, sales_order_id):
     try:
         sales_order = SalesOrder.objects.get(id=sales_order_id)
-        sales_order.delete()
+        sales_order.soft_delete()
     except SalesOrder.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-    except ProtectedError as e:
-        # Return a more detailed error message
-        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    return Response()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['DELETE'])
@@ -167,27 +166,11 @@ def delete_sales_orders(request):
         if not sales_orders.exists():
             return Response({"detail": "None of the sales_orders found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Attempt to delete the sales_orders
-        try:
-            count, _ = sales_orders.delete()
-            return Response({"detail": f"{count} sales_orders deleted successfully."}, status=status.HTTP_200_OK)
-        # except ProtectedError as e:
-        #     # Handle ProtectedError logic (as before)
-        #     related_objects = e.protected_objects
-        #     related_ids = [obj.id for obj in related_objects]
-        #     original_message = str(e)
-        #     start_idx = original_message.find("{")
-        #     end_idx = original_message.find("}") + 1
+        # Soft delete all selected sale_order
+        for sale_order in sales_orders:
+            sale_order.soft_delete()
 
-        #     if start_idx != -1 and end_idx != -1:
-        #         modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
-        #     else:
-        #         modified_message = original_message
-
-        #     return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
-        except ProtectedError as e:
-            # Return a more detailed error message
-            return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": f"{sales_orders.count()} sales orders deleted successfully."}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
