@@ -16,7 +16,21 @@ class Inventory(models.Model):
     store = models.ForeignKey(Store, on_delete=models.PROTECT, null=True, blank=True)
     product = models.ForeignKey(Product, on_delete=models.PROTECT, null=True, blank=True)
 
+    is_deleted = models.BooleanField(default=False)
+    deleted_at = models.DateTimeField(null=True, blank=True)
+
     objects = InventoryQueryManager()
+
+    def soft_delete(self):
+        from django.utils import timezone
+        self.is_deleted = True
+        self.deleted_at = timezone.now()
+        self.save()
+
+    def restore(self):
+        self.is_deleted = False
+        self.deleted_at = None
+        self.save()
 
     def __str__(self):
         return str(self.in_stock)

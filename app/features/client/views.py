@@ -66,11 +66,13 @@ def update_client(request, client_id):
 def delete_client(request, client_id):
     try:
         client = Client.objects.get(id=client_id)
+        client.soft_delete()
     except Client.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    client.delete()
-    return Response()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET'])
@@ -99,12 +101,10 @@ def delete_clients(request):
         if not clients.exists():
             return Response({"detail": "None of the clients found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Attempt to delete the clients
-        try:
-            count, _ = clients.delete()
-            return Response({"detail": f"{count} clients deleted successfully."}, status=status.HTTP_200_OK)
-        except ProtectedError as e:
-            # Return a more detailed error message
-            return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        # Soft delete all selected clients
+        for client in clients:
+            client.soft_delete()
+
+        return Response({"detail": f"{clients.count()} clients deleted successfully."}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

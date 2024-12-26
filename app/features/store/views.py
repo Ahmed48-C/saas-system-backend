@@ -66,35 +66,13 @@ def update_store(request, store_id):
 def delete_store(request, store_id):
     try:
         store = Store.objects.get(id=store_id)
-        store.delete()
+        store.soft_delete()
     except Store.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-    # except ProtectedError as e:
-    #     # Extract the related instances causing the ProtectedError
-    #     related_objects = e.protected_objects
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    #     # Extracting the IDs of related objects
-    #     related_ids = [obj.id for obj in related_objects]
-
-    #     # Get the original error message
-    #     original_message = str(e)
-
-    #     # Find the part of the message containing the related objects (e.g., "<Inventory: hj6h5n>")
-    #     start_idx = original_message.find("{")
-    #     end_idx = original_message.find("}") + 1
-
-    #     # Replace that part with the related IDs
-    #     if start_idx != -1 and end_idx != -1:
-    #         modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
-    #     else:
-    #         modified_message = original_message
-
-    #     return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
-    except ProtectedError as e:
-        # Return a more detailed error message
-        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-    return Response()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET'])
@@ -123,33 +101,10 @@ def delete_stores(request):
         if not stores.exists():
             return Response({"detail": "None of the stores found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Attempt to delete the stores
-        try:
-            count, _ = stores.delete()
-            return Response({"detail": f"{count} stores deleted successfully."}, status=status.HTTP_200_OK)
-        # except ProtectedError as e:
-        #     # Extract the related instances causing the ProtectedError
-        #     related_objects = e.protected_objects
+        # Soft delete all selected stores
+        for store in stores:
+            store.soft_delete()
 
-        #     # Extracting the IDs of related objects
-        #     related_ids = [obj.id for obj in related_objects]
-
-        #     # Get the original error message
-        #     original_message = str(e)
-
-        #     # Find the part of the message containing the related objects (e.g., "<Product: hj6h5n>")
-        #     start_idx = original_message.find("{")
-        #     end_idx = original_message.find("}") + 1
-
-        #     # Replace that part with the related IDs
-        #     if start_idx != -1 and end_idx != -1:
-        #         modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
-        #     else:
-        #         modified_message = original_message
-
-        #     return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
-        except ProtectedError as e:
-            # Return a more detailed error message
-            return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": f"{stores.count()} stores deleted successfully."}, status=status.HTTP_200_OK)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

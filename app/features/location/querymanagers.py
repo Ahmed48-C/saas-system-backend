@@ -4,9 +4,17 @@ import uuid
 from django.utils import timezone
 
 class LocationQueryManager(CommonQueryManager):
-    def filter_by_permission_and_param(self, request):
-        result = super().get_queryset().all()
+    def get_queryset(self):
+        return super().get_queryset().filter(is_deleted=False)
 
+    def get_all_including_deleted(self):
+        return super().get_queryset()
+
+    def get_only_deleted(self):
+        return super().get_queryset().filter(is_deleted=True)
+
+    def filter_by_permission_and_param(self, request):
+        result = self.get_queryset()
         return CommonQueryManager.get_filtered_result(request, result)
 
     def get_all_by_limit(self, request):

@@ -80,35 +80,13 @@ def update_inventory(request, inventory_id):
 def delete_inventory(request, inventory_id):
     try:
         inventory = Inventory.objects.get(id=inventory_id)
-        inventory.delete()
+        inventory.soft_delete()
     except Inventory.DoesNotExist:
         return Response({"detail": "Not found."}, status=status.HTTP_404_NOT_FOUND)
-    # except ProtectedError as e:
-    #     # Extract the related instances causing the ProtectedError
-    #     related_objects = e.protected_objects
+    except Exception as e:
+        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    #     # Extracting the IDs of related objects
-    #     related_ids = [obj.id for obj in related_objects]
-
-    #     # Get the original error message
-    #     original_message = str(e)
-
-    #     # Find the part of the message containing the related objects (e.g., "<Inventory: hj6h5n>")
-    #     start_idx = original_message.find("{")
-    #     end_idx = original_message.find("}") + 1
-
-    #     # Replace that part with the related IDs
-    #     if start_idx != -1 and end_idx != -1:
-    #         modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
-    #     else:
-    #         modified_message = original_message
-
-    #     return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
-    except ProtectedError as e:
-        # Return a more detailed error message
-        return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
-    return Response()
+    return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 @api_view(['GET'])
@@ -137,36 +115,12 @@ def delete_inventories(request):
         if not inventories.exists():
             return Response({"detail": "None of the inventories found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Attempt to delete the inventories
-        try:
-            count, _ = inventories.delete()
-            return Response({"detail": f"{count} inventories deleted successfully."}, status=status.HTTP_200_OK)
-        # except ProtectedError as e:
-        #     # Extract the related instances causing the ProtectedError
-        #     related_objects = e.protected_objects
+        # Soft delete all selected inventories
+        for inventory in inventories:
+            inventory.soft_delete()
 
-        #     # Extracting the IDs of related objects
-        #     related_ids = [obj.id for obj in related_objects]
-
-        #     # Get the original error message
-        #     original_message = str(e)
-
-        #     # Find the part of the message containing the related objects (e.g., "<Product: hj6h5n>")
-        #     start_idx = original_message.find("{")
-        #     end_idx = original_message.find("}") + 1
-
-        #     # Replace that part with the related IDs
-        #     if start_idx != -1 and end_idx != -1:
-        #         modified_message = original_message[:start_idx] + "{" + str(related_ids) + "}" + original_message[end_idx:]
-        #     else:
-        #         modified_message = original_message
-
-        #     return JsonResponse({'error': modified_message}, status=status.HTTP_400_BAD_REQUEST)
-        except ProtectedError as e:
-            # Return a more detailed error message
-            return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"detail": f"{inventories.count()} inventories deleted successfully."}, status=status.HTTP_200_OK)
     except Exception as e:
-        return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
