@@ -318,7 +318,8 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
             total=total,
             status=status_order,
             store_id=store_id,
-            balance_id=balance_id
+            balance_id=balance_id,
+            completed_at=timezone.now().date() if status_order.upper() == "COMPLETED" else None
         )
 
         # Create the PurchaseItem(s) for this PurchaseOrder
@@ -584,6 +585,11 @@ class PurchaseOrderCreateUpdateSerializer(serializers.ModelSerializer):
                     stock_before_action = inventory_in_stock,
                     stock_after_action = new_in_stock,
                 )
+        
+        # Set completed_at when transitioning to Completed status
+        instance = self.instance
+        instance.completed_at = timezone.now().date()
+        instance.save(update_fields=['completed_at'])
 
     def _revert_inventory_on_pending(self, original_items, store):
         for item in original_items:

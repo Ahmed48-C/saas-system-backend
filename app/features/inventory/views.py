@@ -168,3 +168,16 @@ def delete_inventories(request):
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_total_stock(request):
+    from django.db.models import Sum
+    
+    total_stock = Inventory.objects.aggregate(total=Sum('in_stock'))['total'] or 0
+    
+    return Response({
+        'total_stock': total_stock
+    })

@@ -153,3 +153,16 @@ def delete_balances(request):
             return JsonResponse({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({"detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_total_balance(request):
+    from django.db.models import Sum
+    
+    total_balance = Balance.objects.aggregate(total=Sum('amount'))['total'] or 0
+    
+    return Response({
+        'total_balance': total_balance
+    })

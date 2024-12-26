@@ -214,3 +214,69 @@ def create_expense_category(request):
     serializer.is_valid(raise_exception=True)
     serializer.save()
     return Response(serializer.data)
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_last_30_days_expenses(request):
+    from datetime import datetime, timedelta
+    from django.db.models import Sum
+    
+    # Calculate the date 30 days ago from today
+    thirty_days_ago = datetime.now().date() - timedelta(days=30)
+    
+    # Get expenses for last 30 days
+    expenses = Expense.objects.filter(date__gte=thirty_days_ago).order_by('-date')
+    
+    # Calculate total amount
+    total_amount = expenses.aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Prepare simplified expense data
+    expense_list = []
+    for expense in expenses:
+        expense_list.append({
+            'amount': expense.amount,
+            'date': expense.date
+        })
+    
+    return Response({
+        'total_amount': total_amount,
+        'expenses': expense_list
+    })
+
+
+@api_view(['GET'])
+@authentication_classes([JWTAuthentication])
+@permission_classes([IsAuthenticated])
+def get_current_month_expenses(request):
+    from datetime import datetime
+    from django.db.models import Sum
+    from django.utils import timezone
+    
+    # Get the current date
+    today = timezone.now()
+    # Get the first day of the current month
+    first_day = today.replace(day=1, hour=0, minute=0, second=0, microsecond=0)
+    
+    # Get expenses for current month
+    expenses = Expense.objects.filter(
+        date__year=today.year,
+        date__month=today.month
+    ).order_by('-date')
+    
+    # Calculate total amount
+    total_amount = expenses.aggregate(total=Sum('amount'))['total'] or 0
+    
+    # Prepare simplified expense data
+    expense_list = []
+    for expense in expenses:
+        expense_list.append({
+            'amount': expense.amount,
+            'date': expense.date
+        })
+    
+    return Response({
+        'total_amount': total_amount,
+        'expenses': expense_list
+    })

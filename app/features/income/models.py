@@ -17,7 +17,6 @@ class Income(models.Model):
     note = models.TextField(blank=True, null=True)
     date = models.DateField(auto_now_add=True)
     action = models.CharField(max_length=80)
-    currency = models.CharField(max_length=3)
     attachment = models.CharField(max_length=300, null=True, blank=True)
     category = models.ForeignKey(IncomeCategory, on_delete=models.PROTECT, null=True, blank=True)
 
